@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Array de profesiones artísticas -->
+    <string-array name="profesiones_artisticas">
+        <item>DJ</item>
+        <item>Productor</item>
+        <item>Visuales</item>
+        <item>Luces</item>
+        <item>Técnico de Sonido</item>
+        <item>Performance</item>
+        <item>Diseñador</item>
+        <item>Animador</item>
+        <item>3D</item>
+    </string-array>
+
+    <!-- Array de géneros -->
+    <string-array name="generos">
+        <item>Masculino</item>
+        <item>Femenino</item>
+        <item>No binario</item>
+        <item>Prefiero no decirlo</item>
+        <item>Otro</item>
+    </string-array>
+
+    <!-- Array de roles de usuario -->
+    <string-array name="roles_usuario">
+        <item>Artista</item>
+        <item>Organizador</item>
+        <item>Fan</item>
+    </string-array>
+</resources> 

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Theme.NeuraMusic" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryDark">@color/primary_dark</item>
+        <item name="colorAccent">@color/accent_blue</item>
+        <item name="android:windowBackground">@color/background_dark</item>
+        <item name="colorSurface">@color/surface_dark</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="colorOnSurfaceVariant">@color/text_secondary</item>
+        <item name="colorOutline">@color/divider</item>
+
+        <!-- Tipografías personalizadas -->
+        <item name="textAppearanceHeadline1">@style/TextAppearance.NeuraMusic.Headline</item>
+        <item name="textAppearanceBody1">@style/TextAppearance.NeuraMusic.Body</item>
+        <item name="textAppearanceSubtitle1">@style/TextAppearance.NeuraMusic.Link</item>
+    </style>
+
+    <!-- Tema para pantalla completa -->
+    <style name="Theme.NeuraMusic.Fullscreen" parent="Theme.NeuraMusic">
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+        <!-- Estilos para Media3 -->
+        <item name="android:windowBackground">@android:color/black</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:keepScreenOn">true</item>
+    </style>
+</resources>

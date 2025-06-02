@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Tipografía para títulos -->
+    <style name="TextAppearance.NeuraMusic.Headline" parent="TextAppearance.MaterialComponents.Headline5">
+        <item name="fontFamily">@font/titulo_moderno</item> <!-- archivo .ttf a añadir -->
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textSize">24sp</item>
+    </style>
+
+    <!-- Tipografía para cuerpo de texto -->
+    <style name="TextAppearance.NeuraMusic.Body" parent="TextAppearance.MaterialComponents.Body1">
+        <item name="fontFamily">@font/texto_sutil</item> <!-- archivo .ttf a añadir -->
+        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
+    <!-- Tipografía para enlaces -->
+    <style name="TextAppearance.NeuraMusic.Link" parent="TextAppearance.MaterialComponents.Body1">
+        <item name="fontFamily">@font/texto_sutil</item>
+        <item name="android:textColor">@color/link_blue</item>
+        <item name="android:textStyle">italic</item>
+
+    </style>
+
+    <!-- Estilos base para botones de Media3 -->
+    <style name="ExoMediaButton">
+        <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
+        <item name="android:layout_width">48dp</item>
+        <item name="android:layout_height">48dp</item>
+    </style>
+
+    <style name="ExoMediaButton.Play">
+        <item name="android:src">@drawable/exo_icon_play</item>
+        <item name="android:contentDescription">@string/play_pause</item>
+    </style>
+
+    <style name="ExoMediaButton.Pause">
+        <item name="android:src">@drawable/exo_icon_pause</item>
+        <item name="android:contentDescription">@string/play_pause</item>
+    </style>
+</resources>

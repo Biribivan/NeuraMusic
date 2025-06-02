@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "130282535305",
+    "project_id": "neuramusicapp",
+    "storage_bucket": "neuramusicapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:130282535305:android:9ab0ea73c86977cae64958",
+        "android_client_info": {
+          "package_name": "com.example.neuramusic"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDo6jWRYNjtv_6BHFGQB8oQDW6qeqkxTT0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

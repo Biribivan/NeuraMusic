@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- IDs para Media3 -->
+    <item name="exo_content_frame" type="id"/>
+    <item name="exo_surface_view" type="id"/>
+    <item name="exo_overlay" type="id"/>
+    <item name="exo_bottom_bar" type="id"/>
+    <item name="exo_progress" type="id"/>
+    <item name="exo_play_pause" type="id"/>
+</resources> 

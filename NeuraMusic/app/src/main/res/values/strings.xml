@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">NeuraMusic</string>
+    <string name="profile_image">Imagen de perfil</string>
+    <string name="options">Opciones</string>
+    <string name="username_placeholder">\@username</string>
+    <string name="back_button">Volver</string>
+    <string name="add_content">Añadir contenido</string>
+    <string name="add_text">Añadir texto</string>
+    <string name="add_media">Añadir foto o video</string>
+    <string name="add_audio">Añadir audio</string>
+    <string name="close">Cerrar</string>
+    <string name="publish">Publicar</string>
+    <string name="whats_on_your_mind">¿Qué estás pensando?</string>
+    <string name="write_caption">¿Qué quieres compartir?</string>
+    <string name="add_more_media">Añadir más</string>
+    <string name="media_limit_reached">Has alcanzado el límite de 5 archivos</string>
+    <string name="select_media">Seleccionar fotos o videos</string>
+    <string name="media_preview">Vista previa del medio</string>
+    <string name="resize_media">Redimensionar medio</string>
+    <string name="rotation">Rotación</string>
+    <string name="aspect_ratio">Relación de aspecto</string>
+    <string name="apply">Aplicar</string>
+    <string name="add_photos_videos">Añade fotos o videos</string>
+    <string name="max_media_items">Máximo 5 archivos</string>
+    <string name="pip_mode">Modo Picture-in-Picture</string>
+    <string name="play_pause">Reproducir/Pausar</string>
+</resources>
