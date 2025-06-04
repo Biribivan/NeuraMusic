@@ -1,28 +1,34 @@
 package com.example.neuramusic.activities;
 
+import android.content.Intent;
+import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.MediaController;
+import android.widget.VideoView;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.media3.common.MediaItem;
-import androidx.media3.common.Player;
-import androidx.media3.common.util.UnstableApi;
-import androidx.media3.exoplayer.ExoPlayer;
-import androidx.media3.ui.PlayerView;
 
 import com.bumptech.glide.Glide;
 import com.example.neuramusic.R;
 
-@UnstableApi
 public class VisualizadorMediaActivity extends AppCompatActivity {
 
-    private PlayerView playerView;
+    private VideoView videoView;
     private ImageView imageView;
-    private ExoPlayer player;
     private ImageButton btnClose;
     private ImageButton btnPip;
+    private MediaController mediaController;
+
+    public static void launch(AppCompatActivity activity, Uri mediaUri, boolean isVideo) {
+        Intent intent = new Intent(activity, VisualizadorMediaActivity.class);
+        intent.putExtra("mediaUrl", mediaUri.toString());
+        intent.putExtra("mediaType", isVideo ? "video" : "image");
+        activity.startActivity(intent);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,14 +36,15 @@ public class VisualizadorMediaActivity extends AppCompatActivity {
         setContentView(R.layout.activity_visualizador_media);
 
         // Inicializar vistas
-        playerView = findViewById(R.id.playerView);
+        videoView = findViewById(R.id.videoView);
         imageView = findViewById(R.id.imageView);
         btnClose = findViewById(R.id.btnClose);
         btnPip = findViewById(R.id.btnPip);
 
-        // Configurar ExoPlayer
-        player = new ExoPlayer.Builder(this).build();
-        playerView.setPlayer(player);
+        // Configurar controles de video
+        mediaController = new MediaController(this);
+        mediaController.setAnchorView(videoView);
+        videoView.setMediaController(mediaController);
 
         // Configurar botones
         btnClose.setOnClickListener(v -> finish());
@@ -57,18 +64,17 @@ public class VisualizadorMediaActivity extends AppCompatActivity {
     }
 
     private void mostrarVideo(String url) {
-        playerView.setVisibility(View.VISIBLE);
+        videoView.setVisibility(View.VISIBLE);
         imageView.setVisibility(View.GONE);
         btnPip.setVisibility(View.VISIBLE);
 
-        MediaItem mediaItem = MediaItem.fromUri(url);
-        player.setMediaItem(mediaItem);
-        player.prepare();
-        player.play();
+        videoView.setVideoPath(url);
+        videoView.setOnPreparedListener(MediaPlayer::start);
+        videoView.setOnCompletionListener(mp -> videoView.start()); // Reproducir en bucle
     }
 
     private void mostrarImagen(String url) {
-        playerView.setVisibility(View.GONE);
+        videoView.setVisibility(View.GONE);
         imageView.setVisibility(View.VISIBLE);
         btnPip.setVisibility(View.GONE);
         // Cargar imagen con Glide
@@ -76,31 +82,22 @@ public class VisualizadorMediaActivity extends AppCompatActivity {
     }
 
     private void entrarModoPip() {
-        // Implementar modo Picture-in-Picture aquí
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (player != null) {
-            player.release();
-            player = null;
-        }
+        // La funcionalidad PiP se implementará más adelante
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        if (player != null) {
-            player.pause();
+        if (videoView != null && videoView.isPlaying()) {
+            videoView.pause();
         }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if (player != null) {
-            player.play();
+        if (videoView != null && !videoView.isPlaying()) {
+            videoView.start();
         }
     }
 } 

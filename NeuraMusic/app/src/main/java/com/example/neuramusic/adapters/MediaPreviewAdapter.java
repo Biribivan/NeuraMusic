@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.neuramusic.R;
+import com.example.neuramusic.activities.VisualizadorMediaActivity;
 import com.example.neuramusic.model.MediaItem;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;

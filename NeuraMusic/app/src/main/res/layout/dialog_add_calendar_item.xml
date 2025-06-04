@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/background_dark"
+    android:padding="20dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Título -->
+        <EditText
+            android:id="@+id/et_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Título"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_secondary"
+            android:background="@color/edittext_background_dark"
+            android:padding="12dp"
+            android:textSize="16sp"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Descripción -->
+        <EditText
+            android:id="@+id/et_description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Descripción (opcional)"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_secondary"
+            android:background="@color/edittext_background_dark"
+            android:minLines="3"
+            android:gravity="top"
+            android:padding="12dp"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Fecha -->
+        <TextView
+            android:id="@+id/tv_date"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Seleccionar fecha"
+            android:textColor="@color/link_blue"
+            android:textSize="14sp"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Hora -->
+        <TextView
+            android:id="@+id/tv_time"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Seleccionar hora (opcional)"
+            android:textColor="@color/link_blue"
+            android:textSize="14sp"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Tipo -->
+        <Spinner
+            android:id="@+id/spinner_type"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:popupBackground="@color/edittext_background_dark"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Etiqueta de color -->
+        <Spinner
+            android:id="@+id/spinner_label_color"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:popupBackground="@color/edittext_background_dark"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Icono -->
+        <EditText
+            android:id="@+id/et_icon"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Icono (emoji opcional)"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_secondary"
+            android:background="@color/edittext_background_dark"
+            android:padding="12dp"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Enlace -->
+        <EditText
+            android:id="@+id/et_link"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Enlace (opcional)"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_secondary"
+            android:background="@color/edittext_background_dark"
+            android:padding="12dp"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Opciones -->
+        <CheckBox
+            android:id="@+id/checkbox_important"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Marcar como importante"
+            android:textColor="@color/text_secondary"
+            android:layout_marginBottom="8dp" />
+
+        <CheckBox
+            android:id="@+id/checkbox_repeat"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Repetir semanalmente"
+            android:textColor="@color/text_secondary"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Botón guardar -->
+        <Button
+            android:id="@+id/btn_save"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Guardar"
+            android:backgroundTint="@color/accent_blue"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:padding="12dp" />
+    </LinearLayout>
+</ScrollView>

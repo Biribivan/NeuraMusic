@@ -38,6 +38,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+
 public class ArtistHomeActivity extends AppCompatActivity {
 
     private static final String TAG = "ArtistHomeActivity";
@@ -48,12 +49,14 @@ public class ArtistHomeActivity extends AppCompatActivity {
 
     private static final String SUPABASE_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4b3hoZG1paHlkam90c2dncGNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNzk3MjYsImV4cCI6MjA2Mzk1NTcyNn0.Cg4fm9x0NqlkSxtMTvMMFZJ-MNDoN1-u4ymKr7NdzR0";
 
+    private String uid;
+    private String token;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_artist_home);
 
-        // 👉 Toolbar como ActionBar
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
@@ -63,23 +66,19 @@ public class ArtistHomeActivity extends AppCompatActivity {
         tvUsername = findViewById(R.id.tvUsername);
         ivChat = findViewById(R.id.ivChat);
 
-        // Abrir Chat
         ivChat.setOnClickListener(v -> {
-            Intent intent = new Intent(ArtistHomeActivity.this, ChatActivity.class);
-            startActivity(intent);
+            startActivity(new Intent(this, ChatActivity.class));
         });
 
-        // Abrir perfil de usuario
         ivProfile.setOnClickListener(v -> {
-            Intent intent = new Intent(ArtistHomeActivity.this, UserProfileActivity.class);
-            startActivity(intent);
+            startActivity(new Intent(this, UserProfileActivity.class));
         });
 
         supabaseService = RetrofitClient.getClient().create(SupabaseService.class);
 
         SharedPreferences prefs = getSharedPreferences("NeuraPrefs", MODE_PRIVATE);
-        String uid = prefs.getString("user_id", null);
-        String token = prefs.getString("access_token", null);
+        uid = prefs.getString("user_id", null);
+        token = prefs.getString("access_token", null);
 
         if (uid != null && token != null) {
             loadUserData(uid, token);
@@ -87,7 +86,6 @@ public class ArtistHomeActivity extends AppCompatActivity {
 
         bottomNavigation.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
-
             if (id == R.id.nav_home) {
                 loadFragment(new HomeFragment());
             } else if (id == R.id.nav_search) {
@@ -95,7 +93,11 @@ public class ArtistHomeActivity extends AppCompatActivity {
             } else if (id == R.id.nav_library) {
                 loadFragment(new LibraryFragment());
             } else if (id == R.id.nav_calendar) {
-                loadFragment(new CalendarFragment());
+                if (uid != null && token != null) {
+                    loadFragment(new CalendarFragment(token, uid));
+                } else {
+                    Toast.makeText(this, "No se ha iniciado sesión correctamente", Toast.LENGTH_SHORT).show();
+                }
             }
             return true;
         });
@@ -106,7 +108,6 @@ public class ArtistHomeActivity extends AppCompatActivity {
     }
 
     private void loadUserData(String userId, String token) {
-        // Crear el mapa para los parámetros de consulta
         Map<String, String> query = new HashMap<>();
         query.put("id", "eq." + userId);
 
@@ -119,29 +120,23 @@ public class ArtistHomeActivity extends AppCompatActivity {
                                 String json = response.body().string();
                                 Type listType = new TypeToken<List<UserResponse>>() {}.getType();
                                 List<UserResponse> users = new Gson().fromJson(json, listType);
-
                                 if (!users.isEmpty()) {
-                                    UserResponse user = users.get(0);
-                                    // Actualizar la UI con los datos del usuario
-                                    updateUI(user);
+                                    updateUI(users.get(0));
                                 }
                             } catch (Exception e) {
                                 Log.e(TAG, "Error al parsear respuesta", e);
-                                Toast.makeText(ArtistHomeActivity.this,
-                                    "Error al cargar datos", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(ArtistHomeActivity.this, "Error al cargar datos", Toast.LENGTH_SHORT).show();
                             }
                         } else {
                             Log.e(TAG, "Error en la respuesta: " + response.code());
-                            Toast.makeText(ArtistHomeActivity.this,
-                                "Error al cargar datos", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(ArtistHomeActivity.this, "Error al cargar datos", Toast.LENGTH_SHORT).show();
                         }
                     }
 
                     @Override
                     public void onFailure(Call<ResponseBody> call, Throwable t) {
                         Log.e(TAG, "Error de red", t);
-                        Toast.makeText(ArtistHomeActivity.this,
-                            "Error de conexión", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(ArtistHomeActivity.this, "Error de conexión", Toast.LENGTH_SHORT).show();
                     }
                 });
     }
@@ -150,7 +145,7 @@ public class ArtistHomeActivity extends AppCompatActivity {
         tvUsername.setText(user.username);
 
         if (user.profileImageUrl != null && !user.profileImageUrl.isEmpty()) {
-            Glide.with(ArtistHomeActivity.this)
+            Glide.with(this)
                     .load(user.profileImageUrl)
                     .placeholder(R.drawable.ic_user)
                     .circleCrop()

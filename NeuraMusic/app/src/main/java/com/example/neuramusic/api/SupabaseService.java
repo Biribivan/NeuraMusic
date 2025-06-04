@@ -141,4 +141,47 @@ public interface SupabaseService {
         @HeaderMap Map<String, String> headers,
         @Body MediaPost post
     );
+
+    // Calendario: Obtener ítems por usuario y fecha (opcional)
+    @GET("rest/v1/calendar_items")
+    Call<List<com.example.neuramusic.model.CalendarItem>> getCalendarItems(
+            @QueryMap Map<String, String> query,
+            @Header("apikey") String apiKey,
+            @Header("Authorization") String token
+    );
+
+    // Calendario: Crear ítem
+    @POST("rest/v1/calendar_items")
+    @Headers({
+            "Content-Type: application/json",
+            "Prefer: return=representation"
+    })
+    Call<List<com.example.neuramusic.model.CalendarItem>> createCalendarItem(
+            @Body com.example.neuramusic.model.CalendarItem item,
+            @Header("apikey") String apiKey,
+            @Header("Authorization") String token
+    );
+
+
+    // Calendario: Actualizar ítem por ID
+    @PATCH("rest/v1/calendar_items")
+    @Headers({
+            "Content-Type: application/json",
+            "Prefer: return=minimal"
+    })
+    Call<ResponseBody> updateCalendarItem(
+            @Query("id") String itemId,
+            @Header("apikey") String apiKey,
+            @Header("Authorization") String token,
+            @Body Map<String, Object> updates
+    );
+
+    // Calendario: Eliminar ítem por ID
+    @DELETE("rest/v1/calendar_items")
+    Call<ResponseBody> deleteCalendarItem(
+            @Query("id") String itemId,
+            @Header("apikey") String apiKey,
+            @Header("Authorization") String token
+    );
+
 }

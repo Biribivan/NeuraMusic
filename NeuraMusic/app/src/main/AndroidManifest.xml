@@ -24,28 +24,28 @@
             android:name=".activities.MainActivity"
             android:exported="true">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-
+        <!-- Otras actividades -->
         <activity android:name=".activities.HomeActivity" android:exported="false" />
         <activity android:name=".activities.LoginActivity" android:exported="false" />
         <activity android:name=".activities.RoleSelectionActivity" android:exported="false" />
         <activity android:name=".activities.RegisterActivity" android:exported="false" />
-        <activity android:name=".activities.ArtistHomeActivity" android:exported="false" />"
+        <activity android:name=".activities.ArtistHomeActivity" android:exported="false" />
         <activity android:name=".activities.PromoterHomeActivity" android:exported="false" />
-        <activity android:name=".activities.ChatActivity" android:exported="false"/>
+        <activity android:name=".activities.ChatActivity" android:exported="false" />
         <activity android:name=".activities.SettingsActivity" />
-        <activity android:name=".activities.UserProfileActivity" android:exported="false"/>
-        <activity android:name=".activities.EditorActivity" android:exported="false"/>
-        <activity android:name=".activities.AddTextActivity" android:exported="false"/>
-        <activity 
-            android:name=".activities.AddMediaActivity" 
+        <activity android:name=".activities.UserProfileActivity" android:exported="false" />
+        <activity android:name=".activities.EditorActivity" android:exported="false" />
+        <activity android:name=".activities.AddTextActivity" android:exported="false" />
+        <activity
+            android:name=".activities.AddMediaActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
-        <activity 
+        <activity
             android:name=".activities.VisualizadorMediaActivity"
             android:exported="false"
             android:supportsPictureInPicture="true"
@@ -53,11 +53,8 @@
             android:resizeableActivity="true"
             android:theme="@style/Theme.NeuraMusic.Fullscreen" />
 
-
-
-
-
-
+        <!-- NUEVA ACTIVITY para el calendario -->
+        <activity android:name=".ui.calendar.CalendarActivity" android:exported="false" />
 
     </application>
 

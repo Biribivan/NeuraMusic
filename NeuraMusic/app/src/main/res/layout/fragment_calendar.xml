@@ -1,6 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/calendar_root"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/background_dark"
+    android:padding="16dp">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <!-- Encabezado -->
+    <TextView
+        android:id="@+id/tv_calendar_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Calendario"
+        android:textColor="@color/text_primary"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Calendario mensual -->
+    <CalendarView
+        android:id="@+id/calendar_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/edittext_background_dark"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Día seleccionado -->
+    <TextView
+        android:id="@+id/tv_selected_date"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Eventos del día"
+        android:textColor="@color/accent_blue"
+        android:textSize="16sp"
+        android:textStyle="italic"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Lista de ítems del día -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_day_items"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:paddingBottom="8dp" />
+
+    <!-- Botón flotante para añadir ítems -->
+    <ImageButton
+        android:id="@+id/btn_add_calendar_item"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_gravity="end"
+        android:layout_margin="8dp"
+        android:backgroundTint="@color/accent_blue"
+        android:background="@drawable/fab_circle"
+        android:src="@android:drawable/ic_input_add"
+        android:tint="@color/white"
+        android:contentDescription="Añadir evento"
+        android:elevation="6dp" />
+</LinearLayout>
