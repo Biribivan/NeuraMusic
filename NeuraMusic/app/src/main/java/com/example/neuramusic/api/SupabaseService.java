@@ -142,6 +142,20 @@ public interface SupabaseService {
         @Body MediaPost post
     );
 
+    @GET("rest/v1/text_posts")
+    Call<List<TextPost>> getTextPosts(
+        @QueryMap Map<String, String> query,
+        @Header("apikey") String apiKey,
+        @Header("Authorization") String token
+    );
+
+    @GET("rest/v1/media_posts")
+    Call<List<MediaPost>> getMediaPosts(
+        @QueryMap Map<String, String> query,
+        @Header("apikey") String apiKey,
+        @Header("Authorization") String token
+    );
+
     // Calendario: Obtener ítems por usuario y fecha (opcional)
     @GET("rest/v1/calendar_items")
     Call<List<com.example.neuramusic.model.CalendarItem>> getCalendarItems(
