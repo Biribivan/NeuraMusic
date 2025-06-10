@@ -4,9 +4,9 @@ package com.example.neuramusic.model;
 import com.google.gson.annotations.SerializedName;
 
 public class TextPost {
-    public TextPost(String userId, String id) {
+    public TextPost(String userId, String content) {
         this.userId = userId;
-        this.id = id;
+        this.content = content;
     }
 
     @SerializedName("id")
