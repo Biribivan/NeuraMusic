@@ -100,12 +100,12 @@ public class HomeFragment extends Fragment {
                         if (response.isSuccessful() && response.body() != null) {
                             for (TextPost tp : response.body()) {
                                 FeedPost fp = new FeedPost(
-                                        new UserResponse(tp.userId), // se crea un UserResponse con solo el uid
-                                        tp.id,
+                                        new UserResponse(tp.getUserId()), // se crea un UserResponse con solo el uid
+                                        tp.getId(),
                                         new ArrayList<>(),           // no hay media
-                                        tp.text,                     // texto como caption
+                                        tp.getContent(),             // texto como caption
                                         false,
-                                        tp.createdAt
+                                        tp.getCreatedAt()
                                 );
                                 feedPosts.add(fp);
                             }
@@ -138,12 +138,12 @@ private void loadMediaPosts() {
                     if (response.isSuccessful() && response.body() != null) {
                         for (MediaPost mp : response.body()) {
                             FeedPost fp = new FeedPost(
-                                    new UserResponse(mp.userId),                  // usuario mínimo con solo uid
-                                    mp.id,
-                                    mp.mediaUrls != null ? mp.mediaUrls : new ArrayList<>(),
-                                    mp.caption != null ? mp.caption : "",
+                                    new UserResponse(mp.getUserId()),                  // usuario mínimo con solo uid
+                                    mp.getId(),
+                                    mp.getMediaUrls() != null ? mp.getMediaUrls() : new ArrayList<>(),
+                                    mp.getCaption() != null ? mp.getCaption() : "",
                                     true,
-                                    mp.createdAt
+                                    mp.getCreatedAt()
                             );
                             feedPosts.add(fp);
                         }

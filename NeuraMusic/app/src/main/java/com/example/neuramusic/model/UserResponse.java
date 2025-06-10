@@ -55,6 +55,11 @@ public class UserResponse {
 
     public UserResponse() {}
 
+    /** Convenience constructor used when only the user id is known. */
+    public UserResponse(String uid) {
+        this.uid = uid;
+    }
+
     public String getUid() {
         return uid;
     }

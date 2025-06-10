@@ -88,9 +88,9 @@ public class UserPostAdapter extends RecyclerView.Adapter<UserPostAdapter.PostVi
         Call<ResponseBody> call;
 
         if (post.isMedia) {
-            call = supabaseService.deleteMediaPost(post.createdAt, RetrofitClient.API_KEY, "Bearer " + token);
+            call = supabaseService.deleteMediaPost(post.id, RetrofitClient.API_KEY, "Bearer " + token);
         } else {
-            call = supabaseService.deleteTextPost(post.createdAt, RetrofitClient.API_KEY, "Bearer " + token);
+            call = supabaseService.deleteTextPost(post.id, RetrofitClient.API_KEY, "Bearer " + token);
         }
 
         call.enqueue(new Callback<ResponseBody>() {
