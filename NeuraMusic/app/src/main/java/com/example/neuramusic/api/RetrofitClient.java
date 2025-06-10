@@ -13,7 +13,8 @@ import retrofit2.converter.scalars.ScalarsConverterFactory;
 public class RetrofitClient {
     private static final String TAG = "RetrofitClient";
     public static final String API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4b3hoZG1paHlkam90c2dncGNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNzk3MjYsImV4cCI6MjA2Mzk1NTcyNn0.Cg4fm9x0NqlkSxtMTvMMFZJ-MNDoN1-u4ymKr7NdzR0";
-    private static final String BASE_URL = "https://lxoxhdmihydjotsggpco.supabase.co/";
+    // Solo dominio, sin rutas adicionales
+    private static final String BASE_URL = "https://lxoxhdmihydjotsggpco.supabase.co";
     private static Retrofit retrofit = null;
 
     public static Retrofit getClient() {
