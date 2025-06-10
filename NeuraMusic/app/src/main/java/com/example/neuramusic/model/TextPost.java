@@ -1,11 +1,12 @@
+// Modelo TextPost
 package com.example.neuramusic.model;
 
 import com.google.gson.annotations.SerializedName;
 
 public class TextPost {
-    public TextPost(String userId, String content) {
+    public TextPost(String userId, String id) {
         this.userId = userId;
-        this.content = content;
+        this.id = id;
     }
 
     @SerializedName("id")
@@ -34,5 +35,21 @@ public class TextPost {
 
     public String getCreatedAt() {
         return createdAt;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public void setCreatedAt(String createdAt) {
+        this.createdAt = createdAt;
     }
 }

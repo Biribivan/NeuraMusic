@@ -33,6 +33,21 @@ public interface SupabaseService {
             @Body Map<String, String> refreshToken
     );
 
+    @DELETE("rest/v1/media_posts")
+    Call<ResponseBody> deleteMediaPost(
+            @Query("id") String postId,
+            @Header("apikey") String apiKey,
+            @Header("Authorization") String token
+    );
+
+    @DELETE("rest/v1/text_posts")
+    Call<ResponseBody> deleteTextPost(
+            @Query("id") String postId,
+            @Header("apikey") String apiKey,
+            @Header("Authorization") String token
+    );
+
+
     // --- Usuarios ---
     @GET("rest/v1/users")
     Call<List<UserResponse>> getUserById(

@@ -81,13 +81,13 @@ public class EditorActivity extends AppCompatActivity {
     private ImageButton btnBack, btnChangePhoto;
     private ChipGroup chipGroupProfessions;
     private List<String> selectedProfessions = new ArrayList<>();
-    
+
     private SupabaseService supabaseService;
     private String userId;
     private String accessToken;
     private Uri selectedImageUri;
     private Calendar calendar;
-    
+
     private ActivityResultLauncher<PickVisualMediaRequest> pickImage;
 
     @Override
@@ -103,6 +103,7 @@ public class EditorActivity extends AppCompatActivity {
         SharedPreferences prefs = getSharedPreferences("NeuraPrefs", MODE_PRIVATE);
         userId = prefs.getString("user_id", null);
         accessToken = prefs.getString("access_token", null);
+        AuthSession.uid = userId;  // Sincroniza con AuthSession
 
         if (userId == null || accessToken == null) {
             Toast.makeText(this, "Sesión expirada", Toast.LENGTH_SHORT).show();
@@ -119,9 +120,9 @@ public class EditorActivity extends AppCompatActivity {
             if (uri != null) {
                 selectedImageUri = uri;
                 Glide.with(this)
-                    .load(selectedImageUri)
-                    .circleCrop()
-                    .into(ivProfile);
+                        .load(selectedImageUri)
+                        .circleCrop()
+                        .into(ivProfile);
             }
         });
 
@@ -159,23 +160,23 @@ public class EditorActivity extends AppCompatActivity {
     private void setupGenderSpinner() {
         String[] genders = {"Hombre", "Mujer", "Otro"};
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
-            this,
-            android.R.layout.simple_dropdown_item_1line,
-            genders
+                this,
+                android.R.layout.simple_dropdown_item_1line,
+                genders
         );
         spinnerGender.setAdapter(adapter);
-        
+
         spinnerGender.setOnItemClickListener((parent, view, position, id) -> {
             String selectedGender = parent.getItemAtPosition(position).toString();
             tilCustomGender.setVisibility(
-                selectedGender.equals("Otro") ? View.VISIBLE : View.GONE
+                    selectedGender.equals("Otro") ? View.VISIBLE : View.GONE
             );
         });
     }
 
     private void setupDatePicker() {
         calendar = Calendar.getInstance();
-        
+
         DatePickerDialog.OnDateSetListener dateSetListener = (view, year, month, day) -> {
             calendar.set(Calendar.YEAR, year);
             calendar.set(Calendar.MONTH, month);
@@ -185,18 +186,18 @@ public class EditorActivity extends AppCompatActivity {
 
         etBirthDate.setOnClickListener(v -> {
             DatePickerDialog dialog = new DatePickerDialog(
-                this,
-                dateSetListener,
-                calendar.get(Calendar.YEAR),
-                calendar.get(Calendar.MONTH),
-                calendar.get(Calendar.DAY_OF_MONTH)
+                    this,
+                    dateSetListener,
+                    calendar.get(Calendar.YEAR),
+                    calendar.get(Calendar.MONTH),
+                    calendar.get(Calendar.DAY_OF_MONTH)
             );
-            
+
             // Establecer fecha máxima (18 años atrás)
             Calendar maxDate = Calendar.getInstance();
             maxDate.add(Calendar.YEAR, -18);
             dialog.getDatePicker().setMaxDate(maxDate.getTimeInMillis());
-            
+
             dialog.show();
         });
     }
@@ -209,8 +210,8 @@ public class EditorActivity extends AppCompatActivity {
     private void openImagePicker() {
         // Usar el nuevo Photo Picker
         pickImage.launch(new PickVisualMediaRequest.Builder()
-            .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
-            .build());
+                .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
+                .build());
     }
 
     private void loadUserData() {
@@ -242,19 +243,19 @@ public class EditorActivity extends AppCompatActivity {
             Log.e(TAG, "Usuario nulo, no se pueden poblar los campos");
             return;
         }
-        
+
         Log.d(TAG, "Poblando campos con datos del usuario: " + user.toString());
-        
+
         etUsername.setText(user.username);
         etFullName.setText(user.fullName);
         etArtTitle.setText(user.artTitle);
         etBio.setText(user.bio);
-        
+
         // Restaurar profesiones seleccionadas
         if (user.professions != null && !user.professions.isEmpty()) {
             Log.d(TAG, "Restaurando profesiones: " + user.professions.toString());
             selectedProfessions = new ArrayList<>(user.professions);
-            
+
             for (int i = 0; i < chipGroupProfessions.getChildCount(); i++) {
                 View view = chipGroupProfessions.getChildAt(i);
                 if (view instanceof Chip) {
@@ -267,40 +268,40 @@ public class EditorActivity extends AppCompatActivity {
         } else {
             Log.d(TAG, "No hay profesiones para restaurar");
         }
-        
+
         // Cargar imagen de perfil
         if (user.profileImageUrl != null && !user.profileImageUrl.isEmpty()) {
             Log.d(TAG, "Cargando imagen de perfil: " + user.profileImageUrl);
             Glide.with(this)
-                .load(user.profileImageUrl)
-                .placeholder(R.drawable.ic_user)
-                .error(R.drawable.ic_user)
-                .circleCrop()
-                .listener(new RequestListener<Drawable>() {
-                    @Override
-                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
-                        Log.e(TAG, "Error al cargar imagen de perfil: " + (e != null ? e.getMessage() : "desconocido"));
-                        return false;
-                    }
+                    .load(user.profileImageUrl)
+                    .placeholder(R.drawable.ic_user)
+                    .error(R.drawable.ic_user)
+                    .circleCrop()
+                    .listener(new RequestListener<Drawable>() {
+                        @Override
+                        public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                            Log.e(TAG, "Error al cargar imagen de perfil: " + (e != null ? e.getMessage() : "desconocido"));
+                            return false;
+                        }
 
-                    @Override
-                    public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
-                        Log.d(TAG, "Imagen de perfil cargada exitosamente");
-                        return false;
-                    }
-                })
-                .into(ivProfile);
+                        @Override
+                        public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                            Log.d(TAG, "Imagen de perfil cargada exitosamente");
+                            return false;
+                        }
+                    })
+                    .into(ivProfile);
         } else {
             Log.d(TAG, "No hay URL de imagen de perfil");
             ivProfile.setImageResource(R.drawable.ic_user);
         }
-        
+
         // Restaurar URLs de redes sociales
         etInstagram.setText(user.instagram);
         etYoutube.setText(user.youtube);
         etSpotify.setText(user.spotify);
         etSoundcloud.setText(user.soundcloud);
-        
+
         // Restaurar género
         if (user.gender != null) {
             if (user.gender.equals("Hombre") || user.gender.equals("Mujer")) {
@@ -312,7 +313,7 @@ public class EditorActivity extends AppCompatActivity {
                 etCustomGender.setText(user.gender);
             }
         }
-        
+
         // Restaurar fecha de nacimiento
         if (user.birthDate != null && !user.birthDate.isEmpty()) {
             etBirthDate.setText(user.birthDate);
@@ -329,7 +330,7 @@ public class EditorActivity extends AppCompatActivity {
         // Limpiar selecciones previas
         selectedProfessions.clear();
         chipGroupProfessions.removeAllViews();
-        
+
         String[] professions = getResources().getStringArray(R.array.profesiones_artisticas);
         for (String profession : professions) {
             Chip chip = new Chip(this);
@@ -337,7 +338,7 @@ public class EditorActivity extends AppCompatActivity {
             chip.setCheckable(true);
             chip.setCheckedIconVisible(true);
             chip.setChecked(false);
-            
+
             chip.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (isChecked) {
                     if (!selectedProfessions.contains(profession)) {
@@ -350,7 +351,7 @@ public class EditorActivity extends AppCompatActivity {
                 }
                 Log.d(TAG, "Profesiones seleccionadas: " + selectedProfessions.toString());
             });
-            
+
             chipGroupProfessions.addView(chip);
         }
     }
@@ -365,18 +366,18 @@ public class EditorActivity extends AppCompatActivity {
         final String youtube = etYoutube.getText().toString().trim();
         final String spotify = etSpotify.getText().toString().trim();
         final String soundcloud = etSoundcloud.getText().toString().trim();
-        
+
         // Validaciones obligatorias
         if (username.isEmpty()) {
             etUsername.setError("El nombre de usuario es obligatorio");
             return;
         }
-        
+
         if (username.length() < 3) {
             etUsername.setError("El nombre de usuario debe tener al menos 3 caracteres");
             return;
         }
-        
+
         if (fullName.isEmpty()) {
             etFullName.setError("El nombre completo es obligatorio");
             return;
@@ -413,14 +414,14 @@ public class EditorActivity extends AppCompatActivity {
         updates.put("username", username);
         updates.put("full_name", fullName);
         updates.put("art_title", artTitle);
-        
+
         // Solo agregar campos no vacíos
         if (!bio.isEmpty()) updates.put("bio", bio);
         if (!instagram.isEmpty()) updates.put("instagram_url", instagram);
         if (!youtube.isEmpty()) updates.put("youtube_url", youtube);
         if (!spotify.isEmpty()) updates.put("spotify_url", spotify);
         if (!soundcloud.isEmpty()) updates.put("soundcloud_url", soundcloud);
-        
+
         // Manejar género
         String gender = spinnerGender.getText().toString();
         if (!gender.isEmpty()) {
@@ -433,20 +434,20 @@ public class EditorActivity extends AppCompatActivity {
                 updates.put("gender", gender);
             }
         }
-        
+
         // Manejar fecha de nacimiento
         String birthDate = etBirthDate.getText().toString().trim();
         if (!birthDate.isEmpty()) {
             updates.put("birth_date", birthDate);
         }
-        
+
         // Manejar profesiones
         if (!selectedProfessions.isEmpty()) {
             updates.put("professions", selectedProfessions);
         }
-        
+
         Log.d(TAG, "Datos a actualizar: " + new Gson().toJson(updates));
-        
+
         // Si hay una nueva imagen seleccionada, subirla primero
         if (selectedImageUri != null) {
             uploadImage(updates);
@@ -459,65 +460,65 @@ public class EditorActivity extends AppCompatActivity {
         try {
             InputStream inputStream = getContentResolver().openInputStream(selectedImageUri);
             byte[] bytes = IOUtils.toByteArray(inputStream);
-            
+
             String filename = "profile_" + userId + "_" + System.currentTimeMillis() + ".jpg";
             RequestBody requestFile = RequestBody.create(MediaType.parse("image/*"), bytes);
             MultipartBody.Part body = MultipartBody.Part.createFormData("file", filename, requestFile);
-            
+
             Log.d(TAG, "Intentando subir imagen a Supabase...");
-            
+
             supabaseService.uploadImage(filename, body, RetrofitClient.API_KEY, "Bearer " + accessToken)
-                .enqueue(new Callback<ResponseBody>() {
-                    @Override
-                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                        if (response.isSuccessful() && response.body() != null) {
-                            try {
-                                String json = response.body().string();
-                                Log.d(TAG, "Respuesta de subida de imagen: " + json);
-                                Map<String, Object> responseMap = new Gson().fromJson(json, Map.class);
-                                // Construir la URL pública de la imagen
-                                String publicUrl = "https://lxoxhdmihydjotsggpco.supabase.co/storage/v1/object/public/user-images/" + filename;
-                                updates.put("profile_image_url", publicUrl);
-                                saveProfile(updates);
-                            } catch (Exception e) {
-                                Log.e(TAG, "Error al procesar URL de imagen: " + e.getMessage());
-                                Log.e(TAG, "Stacktrace: ", e);
-                                Toast.makeText(EditorActivity.this, 
-                                    "Error al procesar imagen: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                            }
-                        } else {
-                            try {
-                                String errorBody = response.errorBody() != null ? 
-                                    response.errorBody().string() : "Error desconocido";
-                                Log.e(TAG, "Error al subir imagen. Código: " + response.code() + 
-                                    ", Error: " + errorBody);
-                                Toast.makeText(EditorActivity.this, 
-                                    "Error al subir imagen (" + response.code() + "): " + errorBody, 
-                                    Toast.LENGTH_LONG).show();
-                            } catch (Exception e) {
-                                Log.e(TAG, "Error al leer respuesta de error: " + e.getMessage());
-                                Toast.makeText(EditorActivity.this, 
-                                    "Error al subir imagen. Código: " + response.code(), 
-                                    Toast.LENGTH_LONG).show();
+                    .enqueue(new Callback<ResponseBody>() {
+                        @Override
+                        public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                            if (response.isSuccessful() && response.body() != null) {
+                                try {
+                                    String json = response.body().string();
+                                    Log.d(TAG, "Respuesta de subida de imagen: " + json);
+                                    Map<String, Object> responseMap = new Gson().fromJson(json, Map.class);
+                                    // Construir la URL pública de la imagen
+                                    String publicUrl = "https://lxoxhdmihydjotsggpco.supabase.co/storage/v1/object/public/user-images/" + filename;
+                                    updates.put("profile_image_url", publicUrl);
+                                    saveProfile(updates);
+                                } catch (Exception e) {
+                                    Log.e(TAG, "Error al procesar URL de imagen: " + e.getMessage());
+                                    Log.e(TAG, "Stacktrace: ", e);
+                                    Toast.makeText(EditorActivity.this,
+                                            "Error al procesar imagen: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                                }
+                            } else {
+                                try {
+                                    String errorBody = response.errorBody() != null ?
+                                            response.errorBody().string() : "Error desconocido";
+                                    Log.e(TAG, "Error al subir imagen. Código: " + response.code() +
+                                            ", Error: " + errorBody);
+                                    Toast.makeText(EditorActivity.this,
+                                            "Error al subir imagen (" + response.code() + "): " + errorBody,
+                                            Toast.LENGTH_LONG).show();
+                                } catch (Exception e) {
+                                    Log.e(TAG, "Error al leer respuesta de error: " + e.getMessage());
+                                    Toast.makeText(EditorActivity.this,
+                                            "Error al subir imagen. Código: " + response.code(),
+                                            Toast.LENGTH_LONG).show();
+                                }
                             }
                         }
-                    }
 
-                    @Override
-                    public void onFailure(Call<ResponseBody> call, Throwable t) {
-                        Log.e(TAG, "Error de red al subir imagen: " + t.getMessage());
-                        Log.e(TAG, "Stacktrace: ", t);
-                        Toast.makeText(EditorActivity.this, 
-                            "Error de conexión al subir imagen: " + t.getMessage(), 
-                            Toast.LENGTH_LONG).show();
-                    }
-                });
+                        @Override
+                        public void onFailure(Call<ResponseBody> call, Throwable t) {
+                            Log.e(TAG, "Error de red al subir imagen: " + t.getMessage());
+                            Log.e(TAG, "Stacktrace: ", t);
+                            Toast.makeText(EditorActivity.this,
+                                    "Error de conexión al subir imagen: " + t.getMessage(),
+                                    Toast.LENGTH_LONG).show();
+                        }
+                    });
         } catch (Exception e) {
             Log.e(TAG, "Error al preparar imagen: " + e.getMessage());
             Log.e(TAG, "Stacktrace: ", e);
-            Toast.makeText(this, 
-                "Error al procesar imagen: " + e.getMessage(), 
-                Toast.LENGTH_LONG).show();
+            Toast.makeText(this,
+                    "Error al procesar imagen: " + e.getMessage(),
+                    Toast.LENGTH_LONG).show();
         }
     }
 

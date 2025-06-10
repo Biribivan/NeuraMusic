@@ -17,7 +17,7 @@ import retrofit2.Response;
 
 public class AuthSession {
 
-    public static final String API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...";
+    public static final String API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4b3hoZG1paHlkam90c2dncGNvIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0ODM3OTcyNiwiZXhwIjoyMDYzOTU1NzI2fQ.eWRZRHeiIuAA7p6wC6kYULBSXj4y-M9KMaPsOPiRJt8";
     public static String accessToken = null;
     public static String refreshToken = null;
     public static String uid = null;

@@ -99,9 +99,14 @@ public class HomeFragment extends Fragment {
                     public void onResponse(Call<List<TextPost>> call, Response<List<TextPost>> response) {
                         if (response.isSuccessful() && response.body() != null) {
                             for (TextPost tp : response.body()) {
-                                FeedPost fp = new FeedPost(null, tp.getContent(), null, tp.getCreatedAt(), false, null);
-                                fp.user = new UserResponse();
-                                fp.user.uid = tp.getUserId();
+                                FeedPost fp = new FeedPost(
+                                        new UserResponse(tp.userId), // se crea un UserResponse con solo el uid
+                                        tp.id,
+                                        new ArrayList<>(),           // no hay media
+                                        tp.text,                     // texto como caption
+                                        false,
+                                        tp.createdAt
+                                );
                                 feedPosts.add(fp);
                             }
                             Log.d("HomeFragment", "Text posts cargados: " + feedPosts.size());
@@ -119,38 +124,46 @@ public class HomeFragment extends Fragment {
                 });
     }
 
-    private void loadMediaPosts() {
-        Map<String, String> query = new HashMap<>();
-        query.put("order", "created_at.desc");
 
-        supabaseService.getMediaPosts(query, RetrofitClient.API_KEY, "Bearer " + token)
-                .enqueue(new Callback<List<MediaPost>>() {
-                    @Override
-                    public void onResponse(Call<List<MediaPost>> call, Response<List<MediaPost>> response) {
-                        if (response.isSuccessful() && response.body() != null) {
-                            for (MediaPost mp : response.body()) {
-                                FeedPost fp = new FeedPost(null, mp.getCaption(), mp.getMediaUrls(), mp.getCreatedAt(), true, mp.getContent());
+}
 
-                                fp.user = new UserResponse();
-                                fp.user.uid = mp.getUserId();
-                                feedPosts.add(fp);
-                            }
-                            Log.d("HomeFragment", "Media posts cargados: " + response.body().size());
-                            fetchUsers();
-                        } else {
-                            showError();
+private void loadMediaPosts() {
+    Map<String, String> query = new HashMap<>();
+    query.put("order", "created_at.desc");
+
+    supabaseService.getMediaPosts(query, RetrofitClient.API_KEY, "Bearer " + token)
+            .enqueue(new Callback<List<MediaPost>>() {
+                @Override
+                public void onResponse(Call<List<MediaPost>> call, Response<List<MediaPost>> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        for (MediaPost mp : response.body()) {
+                            FeedPost fp = new FeedPost(
+                                    new UserResponse(mp.userId),                  // usuario mínimo con solo uid
+                                    mp.id,
+                                    mp.mediaUrls != null ? mp.mediaUrls : new ArrayList<>(),
+                                    mp.caption != null ? mp.caption : "",
+                                    true,
+                                    mp.createdAt
+                            );
+                            feedPosts.add(fp);
                         }
-                    }
-
-                    @Override
-                    public void onFailure(Call<List<MediaPost>> call, Throwable t) {
-                        Log.e("HomeFragment", "Error cargando posts multimedia", t);
+                        Log.d("HomeFragment", "Media posts cargados: " + response.body().size());
+                        fetchUsers();
+                    } else {
                         showError();
                     }
-                });
-    }
+                }
 
-    private void fetchUsers() {
+                @Override
+                public void onFailure(Call<List<MediaPost>> call, Throwable t) {
+                    Log.e("HomeFragment", "Error cargando posts multimedia", t);
+                    showError();
+                }
+            });
+}
+
+
+private void fetchUsers() {
         if (feedPosts.isEmpty()) {
             updateFeed();
             return;

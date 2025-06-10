@@ -220,6 +220,9 @@ public class AddMediaActivity extends AppCompatActivity {
             View parent = (View) v.getParent().getParent();
             parent.animate().translationZ(hasFocus ? 8f : 0f).setDuration(200).start();
         });
+
+        btnPublish.setOnClickListener(v -> publishPost());
+
     }
 
     private void openMediaPicker() {

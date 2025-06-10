@@ -30,7 +30,6 @@
                 android:layout_centerVertical="true"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_back"
-                android:tint="@color/text_primary"
                 android:contentDescription="@string/back_button" />
 
             <TextView
@@ -51,7 +50,6 @@
                 android:layout_centerVertical="true"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_more"
-                android:tint="@color/text_primary"
                 android:contentDescription="@string/options" />
         </RelativeLayout>
     </com.google.android.material.card.MaterialCardView>
@@ -127,47 +125,35 @@
 
                 <ImageButton
                     android:id="@+id/btnInstagram"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:layout_margin="8dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:background="?attr/selectableItemBackgroundBorderless"
-                    android:src="@drawable/ic_instagram"
-                    android:tint="@color/text_primary"
-                    android:visibility="gone"
-                    android:contentDescription="Instagram" />
+                    android:contentDescription="Instagram"
+                    android:src="@drawable/ic_instagram" />
 
                 <ImageButton
                     android:id="@+id/btnYoutube"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:layout_margin="8dp"
-                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:src="@drawable/ic_youtube"
-                    android:tint="@color/text_primary"
-                    android:visibility="gone"
+                    android:background="?attr/selectableItemBackgroundBorderless"
                     android:contentDescription="YouTube" />
 
                 <ImageButton
                     android:id="@+id/btnSpotify"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:layout_margin="8dp"
-                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:src="@drawable/ic_spotify"
-                    android:tint="@color/text_primary"
-                    android:visibility="gone"
+                    android:background="?attr/selectableItemBackgroundBorderless"
                     android:contentDescription="Spotify" />
 
                 <ImageButton
                     android:id="@+id/btnSoundcloud"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:layout_margin="8dp"
-                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:src="@drawable/ic_soundcloud"
-                    android:tint="@color/text_primary"
-                    android:visibility="gone"
-                    android:contentDescription="SoundCloud" />
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Soundcloud" />
             </LinearLayout>
 
             <!-- Grid de contenido estilo Pinterest -->
@@ -176,7 +162,17 @@
                 android:layout_width="match_parent"
                 android:layout_height="413dp"
                 android:clipToPadding="false"
-                android:paddingBottom="80dp" />
+                android:paddingBottom="16dp" />
+
+            <!-- Posts personales -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvUserPosts"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:nestedScrollingEnabled="false"
+                android:paddingBottom="80dp"
+                android:clipToPadding="false" />
 
             <!-- WebView para YouTube embebido -->
             <LinearLayout

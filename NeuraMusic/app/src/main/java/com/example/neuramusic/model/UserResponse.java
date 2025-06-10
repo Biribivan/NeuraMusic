@@ -55,6 +55,70 @@ public class UserResponse {
 
     public UserResponse() {}
 
+    public String getUid() {
+        return uid;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public String getArtTitle() {
+        return artTitle;
+    }
+
+    public String getBio() {
+        return bio;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public String getProfileImageUrl() {
+        return profileImageUrl;
+    }
+
+    public List<String> getProfessions() {
+        return professions;
+    }
+
+    public String getInstagram() {
+        return instagram;
+    }
+
+    public String getYoutube() {
+        return youtube;
+    }
+
+    public String getSpotify() {
+        return spotify;
+    }
+
+    public String getSoundcloud() {
+        return soundcloud;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public String getBirthDate() {
+        return birthDate;
+    }
+
+    public boolean isBlocked() {
+        return isBlocked;
+    }
+
+    public boolean isApproved() {
+        return isApproved;
+    }
+
     @Override
     public String toString() {
         return "UserResponse{" +
