@@ -19,35 +19,35 @@ import retrofit2.http.*;
 public interface SupabaseService {
 
     // Autenticación
-    @POST("auth/v1/signup")
+    @POST("/auth/v1/signup")
     @Headers("Content-Type: application/json")
     Call<ResponseBody> signUp(
             @Body AuthRequest request,
             @Header("apikey") String apiKey
     );
 
-    @POST("auth/v1/token?grant_type=password")
+    @POST("/auth/v1/token?grant_type=password")
     @Headers("Content-Type: application/json")
     Call<ResponseBody> login(
             @Body AuthRequest request,
             @Header("apikey") String apiKey
     );
 
-    @POST("auth/v1/token?grant_type=refresh_token")
+    @POST("/auth/v1/token?grant_type=refresh_token")
     Call<ResponseBody> refreshToken(
         @HeaderMap Map<String, String> headers,
         @Body Map<String, String> refreshToken
     );
 
     // Operaciones de usuario
-    @GET("rest/v1/users")
+    @GET("/rest/v1/users")
     Call<ResponseBody> getUserById(
             @QueryMap Map<String, String> query,
             @Header("apikey") String apiKey,
             @Header("Authorization") String token
     );
 
-    @PATCH("rest/v1/users")
+    @PATCH("/rest/v1/users")
     @Headers({
             "Content-Type: application/json",
             "Prefer: return=minimal"
@@ -61,7 +61,7 @@ public interface SupabaseService {
 
     // Subida de imágenes
     @Multipart
-    @POST("storage/v1/object/user-images/{filename}")
+    @POST("/storage/v1/object/user-images/{filename}")
     Call<ResponseBody> uploadImage(
             @Path("filename") String filename,
             @Part MultipartBody.Part file,
@@ -70,14 +70,14 @@ public interface SupabaseService {
     );
 
     // Bloques de perfil
-    @GET("rest/v1/profile_blocks")
+    @GET("/rest/v1/profile_blocks")
     Call<List<ProfileBlock>> getProfileBlocksByUserId(
             @QueryMap Map<String, String> query,
             @Header("apikey") String apiKey,
             @Header("Authorization") String token
     );
 
-    @POST("rest/v1/profile_blocks")
+    @POST("/rest/v1/profile_blocks")
     @Headers({
             "Content-Type: application/json",
             "Prefer: return=minimal"
@@ -88,7 +88,7 @@ public interface SupabaseService {
             @Header("Authorization") String token
     );
 
-    @PATCH("rest/v1/profile_blocks")
+    @PATCH("/rest/v1/profile_blocks")
     @Headers({
             "Content-Type: application/json",
             "Prefer: return=minimal"
@@ -100,35 +100,35 @@ public interface SupabaseService {
             @Body Map<String, Object> updates
     );
 
-    @DELETE("rest/v1/profile_blocks")
+    @DELETE("/rest/v1/profile_blocks")
     Call<ResponseBody> deleteProfileBlock(
             @Query("id") String blockId,
             @Header("apikey") String apiKey,
             @Header("Authorization") String token
     );
 
-    @GET("rest/v1/users")
+    @GET("/rest/v1/users")
     Call<ResponseBody> checkUsername(
             @QueryMap Map<String, String> query,
             @Header("apikey") String apiKey
     );
 
     @Multipart
-    @POST("storage/v1/object/block-media")
+    @POST("/storage/v1/object/block-media")
     Call<ResponseBody> uploadBlockMedia(
             @Part MultipartBody.Part file,
             @Header("apikey") String apiKey,
             @Header("Authorization") String token
     );
 
-    @POST("rest/v1/text_posts")
+    @POST("/rest/v1/text_posts")
     Call<ResponseBody> createTextPost(
         @HeaderMap Map<String, String> headers,
         @Body TextPost post
     );
 
     @Multipart
-    @POST("storage/v1/object/post-media/{filename}")
+    @POST("/storage/v1/object/post-media/{filename}")
     Call<ResponseBody> uploadPostMedia(
         @Path("filename") String filename,
         @Part MultipartBody.Part file,
@@ -136,20 +136,20 @@ public interface SupabaseService {
         @Header("Authorization") String token
     );
 
-    @POST("rest/v1/media_posts")
+    @POST("/rest/v1/media_posts")
     Call<ResponseBody> createMediaPost(
         @HeaderMap Map<String, String> headers,
         @Body MediaPost post
     );
 
-    @GET("rest/v1/text_posts")
+    @GET("/rest/v1/text_posts")
     Call<List<TextPost>> getTextPosts(
         @QueryMap Map<String, String> query,
         @Header("apikey") String apiKey,
         @Header("Authorization") String token
     );
 
-    @GET("rest/v1/media_posts")
+    @GET("/rest/v1/media_posts")
     Call<List<MediaPost>> getMediaPosts(
         @QueryMap Map<String, String> query,
         @Header("apikey") String apiKey,
@@ -157,7 +157,7 @@ public interface SupabaseService {
     );
 
     // Calendario: Obtener ítems por usuario y fecha (opcional)
-    @GET("rest/v1/calendar_items")
+    @GET("/rest/v1/calendar_items")
     Call<List<com.example.neuramusic.model.CalendarItem>> getCalendarItems(
             @QueryMap Map<String, String> query,
             @Header("apikey") String apiKey,
@@ -165,7 +165,7 @@ public interface SupabaseService {
     );
 
     // Calendario: Crear ítem
-    @POST("rest/v1/calendar_items")
+    @POST("/rest/v1/calendar_items")
     @Headers({
             "Content-Type: application/json",
             "Prefer: return=representation"
@@ -178,7 +178,7 @@ public interface SupabaseService {
 
 
     // Calendario: Actualizar ítem por ID
-    @PATCH("rest/v1/calendar_items")
+    @PATCH("/rest/v1/calendar_items")
     @Headers({
             "Content-Type: application/json",
             "Prefer: return=minimal"
@@ -191,7 +191,7 @@ public interface SupabaseService {
     );
 
     // Calendario: Eliminar ítem por ID
-    @DELETE("rest/v1/calendar_items")
+    @DELETE("/rest/v1/calendar_items")
     Call<ResponseBody> deleteCalendarItem(
             @Query("id") String itemId,
             @Header("apikey") String apiKey,
