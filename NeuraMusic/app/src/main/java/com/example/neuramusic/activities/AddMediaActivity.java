@@ -1,5 +1,7 @@
 package com.example.neuramusic.activities;
 
+import static androidx.core.content.ContextCompat.startActivity;
+
 import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -34,6 +36,7 @@ import com.example.neuramusic.api.RetrofitClient;
 import com.example.neuramusic.api.SupabaseService;
 import com.example.neuramusic.model.MediaItem;
 import com.example.neuramusic.model.MediaPost;
+import com.example.neuramusic.model.SupabaseSignupResponse;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -59,14 +62,12 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-import org.json.JSONObject;
-
 public class AddMediaActivity extends AppCompatActivity {
     private static final String TAG = "AddMediaActivity";
     private static final int MAX_MEDIA_ITEMS = 5;
     private static final String[] REQUIRED_PERMISSIONS = {
-        Manifest.permission.READ_MEDIA_IMAGES,
-        Manifest.permission.READ_MEDIA_VIDEO
+            Manifest.permission.READ_MEDIA_IMAGES,
+            Manifest.permission.READ_MEDIA_VIDEO
     };
     private static final String BUCKET_NAME = "post-media";
     private static final String STORAGE_URL = "https://lxoxhdmihydjotsggpco.supabase.co/storage/v1/object/public/" + BUCKET_NAME + "/";
@@ -84,12 +85,12 @@ public class AddMediaActivity extends AppCompatActivity {
     private ThumbnailAdapter thumbnailAdapter;
     private SupabaseService supabaseService;
 
-    private final ActivityResultLauncher<String[]> mediaPickerLauncher = 
-        registerForActivityResult(new ActivityResultContracts.OpenMultipleDocuments(), uris -> {
-            if (uris != null && !uris.isEmpty()) {
-                handleSelectedMedia(uris);
-            }
-        });
+    private final ActivityResultLauncher<String[]> mediaPickerLauncher =
+            registerForActivityResult(new ActivityResultContracts.OpenMultipleDocuments(), uris -> {
+                if (uris != null && !uris.isEmpty()) {
+                    handleSelectedMedia(uris);
+                }
+            });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,7 +102,6 @@ public class AddMediaActivity extends AppCompatActivity {
         setupListeners();
         checkPermissions();
 
-        // Inicializar el servicio de Supabase
         supabaseService = RetrofitClient.getClient().create(SupabaseService.class);
     }
 
@@ -178,10 +178,8 @@ public class AddMediaActivity extends AppCompatActivity {
         placeholderView = findViewById(R.id.placeholderView);
         fabAddMore = findViewById(R.id.fabAddMore);
 
-        // Configurar el ViewPager2
         viewPager.setOffscreenPageLimit(1);
         viewPager.setPageTransformer((page, position) -> {
-            // Mantener las páginas a tamaño completo
             page.setTranslationX(-position * page.getWidth());
             page.setAlpha(1.0f);
             page.setScaleX(1.0f);
@@ -189,35 +187,24 @@ public class AddMediaActivity extends AppCompatActivity {
         });
 
         findViewById(R.id.btnClose).setOnClickListener(v -> finish());
-        
-        // Configurar el placeholder como clickeable
         placeholderView.setOnClickListener(v -> openMediaPicker());
-        
-        // Configurar el botón flotante
         fabAddMore.setOnClickListener(v -> openMediaPicker());
     }
 
     private void setupAdapters() {
         selectedMedia = new ArrayList<>();
-        
-        // Configurar adaptador del ViewPager
         previewAdapter = new MediaPreviewAdapter(selectedMedia, this::openMediaPicker);
         viewPager.setAdapter(previewAdapter);
         viewPager.setOffscreenPageLimit(1);
 
-        // Configurar indicador de páginas
-        new TabLayoutMediator(tabLayout, viewPager,
-            (tab, position) -> {/* No necesitamos título */}).attach();
+        new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {}).attach();
 
-        // Configurar adaptador de miniaturas
         thumbnailAdapter = new ThumbnailAdapter(selectedMedia, position -> {
             viewPager.setCurrentItem(position, true);
         });
-        rvThumbnails.setLayoutManager(
-            new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        rvThumbnails.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         rvThumbnails.setAdapter(thumbnailAdapter);
 
-        // Actualizar visibilidad inicial
         updateViewsVisibility();
     }
 
@@ -229,13 +216,9 @@ public class AddMediaActivity extends AppCompatActivity {
             }
         });
 
-        // Añadir animación al campo de texto
         etCaption.setOnFocusChangeListener((v, hasFocus) -> {
             View parent = (View) v.getParent().getParent();
-            parent.animate()
-                .translationZ(hasFocus ? 8f : 0f)
-                .setDuration(200)
-                .start();
+            parent.animate().translationZ(hasFocus ? 8f : 0f).setDuration(200).start();
         });
     }
 
@@ -267,55 +250,21 @@ public class AddMediaActivity extends AppCompatActivity {
             boolean isVideo = mimeType != null && mimeType.startsWith("video/");
 
             MediaItem mediaItem = new MediaItem(uri, isVideo);
-            
-            // Obtener relación de aspecto inicial
-            if (isVideo) {
-                setVideoAspectRatio(mediaItem);
-            } else {
-                setImageAspectRatio(mediaItem);
-            }
+            if (isVideo) setVideoAspectRatio(mediaItem);
+            else setImageAspectRatio(mediaItem);
 
             selectedMedia.add(mediaItem);
         }
 
-        // Notificar cambios a los adaptadores
         previewAdapter.notifyDataSetChanged();
         thumbnailAdapter.notifyDataSetChanged();
-        
-        // Actualizar visibilidad de las vistas
         updateViewsVisibility();
 
-        // Mostrar el último elemento añadido
         if (!selectedMedia.isEmpty()) {
             int newPosition = selectedMedia.size() - 1;
             viewPager.setCurrentItem(newPosition, true);
             rvThumbnails.smoothScrollToPosition(newPosition);
         }
-    }
-
-    private void showResizeDialog(int position) {
-        MediaItem item = selectedMedia.get(position);
-        
-        View dialogView = getLayoutInflater().inflate(R.layout.dialog_resize_media, null);
-        BottomSheetDialog dialog = new BottomSheetDialog(this);
-        dialog.setContentView(dialogView);
-
-        Slider sliderRotation = dialogView.findViewById(R.id.sliderRotation);
-        Slider sliderAspectRatio = dialogView.findViewById(R.id.sliderAspectRatio);
-        MaterialButton btnApply = dialogView.findViewById(R.id.btnApply);
-
-        // Configurar valores iniciales
-        sliderRotation.setValue(item.getRotation());
-        sliderAspectRatio.setValue(item.getAspectRatio());
-
-        btnApply.setOnClickListener(v -> {
-            item.setRotation((int) sliderRotation.getValue());
-            item.setAspectRatio(sliderAspectRatio.getValue());
-            previewAdapter.notifyItemChanged(position);
-            dialog.dismiss();
-        });
-
-        dialog.show();
     }
 
     private void setVideoAspectRatio(MediaItem mediaItem) {
@@ -354,7 +303,6 @@ public class AddMediaActivity extends AppCompatActivity {
         btnPublish.setEnabled(false);
         String caption = etCaption.getText().toString();
 
-        // Obtener el token de acceso y el ID de usuario
         SharedPreferences prefs = getSharedPreferences("NeuraPrefs", MODE_PRIVATE);
         String userId = prefs.getString("user_id", null);
         String accessToken = prefs.getString("access_token", null);
@@ -366,209 +314,141 @@ public class AddMediaActivity extends AppCompatActivity {
             return;
         }
 
-        // Mostrar progreso
         ProgressDialog progressDialog = new ProgressDialog(this);
         progressDialog.setMessage("Publicando...");
         progressDialog.setCancelable(false);
         progressDialog.show();
 
-        // Lista para almacenar las URLs de los medios subidos
         List<String> mediaUrls = new ArrayList<>();
         final int[] uploadedCount = {0};
 
-        // Subir cada medio secuencialmente
         for (MediaItem mediaItem : selectedMedia) {
             try {
                 InputStream inputStream = getContentResolver().openInputStream(mediaItem.getUri());
                 byte[] bytes = IOUtils.toByteArray(inputStream);
-                
+
                 String extension = mediaItem.isVideo() ? ".mp4" : ".jpg";
                 String filename = "post_" + userId + "_" + System.currentTimeMillis() + extension;
                 String mimeType = mediaItem.isVideo() ? "video/*" : "image/jpeg";
-                
-                Log.d(TAG, "Preparando archivo para subir: " + filename);
-                Log.d(TAG, "Tipo MIME: " + mimeType);
-                Log.d(TAG, "Tamaño del archivo: " + bytes.length + " bytes");
-                
+
                 RequestBody requestFile = RequestBody.create(MediaType.parse(mimeType), bytes);
                 MultipartBody.Part body = MultipartBody.Part.createFormData("file", filename, requestFile);
 
-                Log.d(TAG, "Iniciando subida a Supabase...");
                 supabaseService.uploadPostMedia(filename, body, RetrofitClient.API_KEY, "Bearer " + accessToken)
-                    .enqueue(new Callback<ResponseBody>() {
-                        @Override
-                        public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                            Log.d(TAG, "Respuesta recibida - Código: " + response.code());
-                            
-                            if (!response.isSuccessful()) {
-                                try {
-                                    String errorBody = response.errorBody() != null ? 
-                                        response.errorBody().string() : "Error desconocido";
-                                    Log.e(TAG, "Error en la respuesta: " + errorBody);
-                                    handleError(new Exception("Error al subir medio: " + errorBody), progressDialog);
-                                } catch (IOException e) {
-                                    Log.e(TAG, "Error al leer respuesta de error", e);
-                                    handleError(e, progressDialog);
+                        .enqueue(new Callback<ResponseBody>() {
+                            @Override
+                            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                                if (!response.isSuccessful() || response.body() == null) {
+                                    handleError(new Exception("Error al subir medio"), progressDialog);
+                                    return;
                                 }
-                                return;
-                            }
-                            
-                            if (response.body() == null) {
-                                Log.e(TAG, "Respuesta vacía del servidor");
-                                handleError(new Exception("Respuesta vacía del servidor"), progressDialog);
-                                return;
-                            }
 
-                            try {
-                                String responseBody = response.body().string();
-                                Log.d(TAG, "Respuesta del servidor: " + responseBody);
-                                
                                 String publicUrl = STORAGE_URL + filename;
-                                Log.d(TAG, "URL pública generada: " + publicUrl);
-                                
                                 mediaUrls.add(publicUrl);
                                 uploadedCount[0]++;
 
-                                Log.d(TAG, "Progreso de subida: " + uploadedCount[0] + "/" + selectedMedia.size());
-                                
                                 if (uploadedCount[0] == selectedMedia.size()) {
-                                    Log.d(TAG, "Todos los medios subidos, creando post...");
                                     createMediaPost(userId, accessToken, caption, mediaUrls, progressDialog);
                                 }
-                            } catch (Exception e) {
-                                Log.e(TAG, "Error procesando respuesta", e);
-                                handleError(e, progressDialog);
                             }
-                        }
 
-                        @Override
-                        public void onFailure(Call<ResponseBody> call, Throwable t) {
-                            Log.e(TAG, "Error de red", t);
-                            handleError(t, progressDialog);
-                        }
-                    });
+                            @Override
+                            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                                handleError(t, progressDialog);
+                            }
+                        });
 
             } catch (Exception e) {
-                Log.e(TAG, "Error preparando archivo", e);
                 handleError(e, progressDialog);
                 return;
             }
         }
     }
 
-    private void createMediaPost(String userId, String accessToken, String caption, 
-                               List<String> mediaUrls, ProgressDialog progressDialog) {
-        // Crear el objeto MediaPost
+    private void createMediaPost(String userId, String accessToken, String caption,
+                                 List<String> mediaUrls, ProgressDialog progressDialog) {
         MediaPost post = new MediaPost(userId, caption, mediaUrls);
 
-        // Preparar headers
         Map<String, String> headers = new HashMap<>();
         headers.put("apikey", RetrofitClient.API_KEY);
         headers.put("Authorization", "Bearer " + accessToken);
         headers.put("Content-Type", "application/json");
         headers.put("Prefer", "return=minimal");
 
-        // Crear el post en la base de datos
-        supabaseService.createMediaPost(headers, post)
-            .enqueue(new Callback<ResponseBody>() {
-                @Override
-                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                    progressDialog.dismiss();
-                    if (response.isSuccessful()) {
-                        Toast.makeText(AddMediaActivity.this, 
-                            "Publicado con éxito", Toast.LENGTH_SHORT).show();
-                        finish();
-                    } else {
-                        btnPublish.setEnabled(true);
-                        Toast.makeText(AddMediaActivity.this, 
-                            "Error al crear el post", Toast.LENGTH_SHORT).show();
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<ResponseBody> call, Throwable t) {
-                    progressDialog.dismiss();
+        supabaseService.createMediaPost(headers, post).enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                progressDialog.dismiss();
+                if (response.isSuccessful()) {
+                    Toast.makeText(AddMediaActivity.this, "Publicado con éxito", Toast.LENGTH_SHORT).show();
+                    finish();
+                } else {
                     btnPublish.setEnabled(true);
-                    Toast.makeText(AddMediaActivity.this, 
-                        "Error de conexión", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(AddMediaActivity.this, "Error al crear el post", Toast.LENGTH_SHORT).show();
                 }
-            });
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                progressDialog.dismiss();
+                btnPublish.setEnabled(true);
+                Toast.makeText(AddMediaActivity.this, "Error de conexión", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void handleError(Throwable t, ProgressDialog progressDialog) {
         progressDialog.dismiss();
         btnPublish.setEnabled(true);
-        
-        // Verificar si es un error de token expirado
+
         if (t.getMessage() != null && t.getMessage().contains("jwt expired")) {
-            // Obtener nuevo token
             refreshToken();
             return;
         }
-        
-        String errorMessage = t.getMessage() != null ? t.getMessage() : "Error desconocido";
-        Toast.makeText(this, "Error: " + errorMessage, Toast.LENGTH_LONG).show();
+
+        Toast.makeText(this, "Error: " + t.getMessage(), Toast.LENGTH_LONG).show();
         Log.e(TAG, "Error detallado: ", t);
     }
 
     private void refreshToken() {
         SharedPreferences prefs = getSharedPreferences("NeuraPrefs", MODE_PRIVATE);
         String refreshToken = prefs.getString("refresh_token", null);
-        
+
         if (refreshToken == null) {
-            // Si no hay refresh token, redirigir al login
-            Toast.makeText(this, "Sesión expirada. Por favor, inicia sesión nuevamente", Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(this, LoginActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
-            finish();
+            redirectToLogin();
             return;
         }
 
-        // Crear el request para renovar el token
         Map<String, String> headers = new HashMap<>();
         headers.put("apikey", RetrofitClient.API_KEY);
         headers.put("Content-Type", "application/json");
 
-        Map<String, String> refreshRequest = new HashMap<>();
-        refreshRequest.put("refresh_token", refreshToken);
+        Map<String, String> body = new HashMap<>();
+        body.put("refresh_token", refreshToken);
 
-        supabaseService.refreshToken(headers, refreshRequest)
-            .enqueue(new Callback<ResponseBody>() {
-                @Override
-                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                    if (response.isSuccessful() && response.body() != null) {
-                        try {
-                            String json = response.body().string();
-                            JSONObject jsonObject = new JSONObject(json);
-                            
-                            // Guardar el nuevo token
-                            String newAccessToken = jsonObject.getString("access_token");
-                            String newRefreshToken = jsonObject.getString("refresh_token");
-                            
-                            SharedPreferences.Editor editor = prefs.edit();
-                            editor.putString("access_token", newAccessToken);
-                            editor.putString("refresh_token", newRefreshToken);
-                            editor.apply();
+        SupabaseService authService = RetrofitClient.getSupabaseAuthService();
+        authService.refreshAccessToken(headers, body).enqueue(new Callback<SupabaseSignupResponse>() {
+            @Override
+            public void onResponse(Call<SupabaseSignupResponse> call, Response<SupabaseSignupResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    SupabaseSignupResponse signupResponse = response.body();
 
-                            // Reintentar la publicación
-                            publishPost();
-                        } catch (Exception e) {
-                            Log.e(TAG, "Error al procesar respuesta de refresh token", e);
-                            redirectToLogin();
-                        }
-                    } else {
-                        Log.e(TAG, "Error al renovar token: " + response.code());
-                        redirectToLogin();
-                    }
-                }
+                    SharedPreferences.Editor editor = prefs.edit();
+                    editor.putString("access_token", signupResponse.access_token);
+                    editor.putString("refresh_token", signupResponse.refresh_token);
+                    editor.apply();
 
-                @Override
-                public void onFailure(Call<ResponseBody> call, Throwable t) {
-                    Log.e(TAG, "Error de red al renovar token", t);
+                    publishPost();
+                } else {
                     redirectToLogin();
                 }
-            });
+            }
+
+            @Override
+            public void onFailure(Call<SupabaseSignupResponse> call, Throwable t) {
+                redirectToLogin();
+            }
+        });
     }
 
     private void redirectToLogin() {
@@ -582,21 +462,19 @@ public class AddMediaActivity extends AppCompatActivity {
     private void checkPermissions() {
         List<String> permissionsToRequest = new ArrayList<>();
         for (String permission : REQUIRED_PERMISSIONS) {
-            if (ContextCompat.checkSelfPermission(this, permission) 
-                != PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
                 permissionsToRequest.add(permission);
             }
         }
 
         if (!permissionsToRequest.isEmpty()) {
-            ActivityCompat.requestPermissions(this, 
-                permissionsToRequest.toArray(new String[0]), 1);
+            ActivityCompat.requestPermissions(this, permissionsToRequest.toArray(new String[0]), 1);
         }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                         @NonNull int[] grantResults) {
+                                           @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         boolean allGranted = true;
         for (int result : grantResults) {
@@ -607,9 +485,8 @@ public class AddMediaActivity extends AppCompatActivity {
         }
 
         if (!allGranted) {
-            Toast.makeText(this, "Se necesitan permisos para acceder a los medios",
-                Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Se necesitan permisos para acceder a los medios", Toast.LENGTH_SHORT).show();
             finish();
         }
     }
-} 
+}

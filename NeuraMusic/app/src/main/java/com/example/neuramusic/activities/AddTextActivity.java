@@ -1,5 +1,7 @@
 package com.example.neuramusic.activities;
 
+
+
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
 import android.content.SharedPreferences;
@@ -137,9 +139,9 @@ public class AddTextActivity extends AppCompatActivity {
             finish();
             return;
         }
-        
+
         TextPost post = new TextPost(userId, content);
-        
+
         Map<String, String> headers = new HashMap<>();
         headers.put("apikey", RetrofitClient.API_KEY);
         headers.put("Authorization", "Bearer " + token);
@@ -147,27 +149,28 @@ public class AddTextActivity extends AppCompatActivity {
         headers.put("Prefer", "return=minimal");
 
         supabaseService.createTextPost(headers, post)
-            .enqueue(new Callback<ResponseBody>() {
-                @Override
-                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                    if (response.isSuccessful()) {
-                        Toast.makeText(AddTextActivity.this, "Publicado con éxito", Toast.LENGTH_SHORT).show();
-                        finish();
-                    } else {
+                .enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        if (response.isSuccessful()) {
+                            Toast.makeText(AddTextActivity.this, "Publicado con éxito", Toast.LENGTH_SHORT).show();
+                            finish();
+                        } else {
+                            btnPublish.setEnabled(true);
+                            animateButton(true);
+                            Toast.makeText(AddTextActivity.this, "Error al publicar", Toast.LENGTH_SHORT).show();
+                            Log.e(TAG, "Error: " + response.code());
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {
                         btnPublish.setEnabled(true);
                         animateButton(true);
-                        Toast.makeText(AddTextActivity.this, "Error al publicar", Toast.LENGTH_SHORT).show();
-                        Log.e(TAG, "Error: " + response.code());
+                        Toast.makeText(AddTextActivity.this, "Error de conexión", Toast.LENGTH_SHORT).show();
+                        Log.e(TAG, "Error: " + t.getMessage());
                     }
-                }
-
-                @Override
-                public void onFailure(Call<ResponseBody> call, Throwable t) {
-                    btnPublish.setEnabled(true);
-                    animateButton(true);
-                    Toast.makeText(AddTextActivity.this, "Error de conexión", Toast.LENGTH_SHORT).show();
-                    Log.e(TAG, "Error: " + t.getMessage());
-                }
-            });
+                });
     }
+
 } 

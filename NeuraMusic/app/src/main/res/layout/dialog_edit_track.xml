@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:layout_margin="24dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="8dp"
+    android:backgroundTint="@color/background_dark">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <EditText
+            android:id="@+id/track_title"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:hint="Título de la canción"
+            android:textColor="@android:color/white"
+            android:textColorHint="#AAFFFFFF"
+            android:inputType="textCapWords"
+            android:singleLine="true"
+            android:background="@drawable/bg_edit_text"
+            android:padding="12dp" />
+
+        <EditText
+            android:id="@+id/track_artist"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Nombre del artista"
+            android:textColor="@android:color/white"
+            android:textColorHint="#AAFFFFFF"
+            android:inputType="textCapWords"
+            android:singleLine="true"
+            android:background="@drawable/bg_edit_text"
+            android:layout_marginTop="12dp"
+            android:padding="12dp" />
+
+        <EditText
+            android:id="@+id/track_genre"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Género musical (opcional)"
+            android:textColor="@android:color/white"
+            android:textColorHint="#AAFFFFFF"
+            android:inputType="textCapWords"
+            android:singleLine="true"
+            android:background="@drawable/bg_edit_text"
+            android:layout_marginTop="12dp"
+            android:padding="12dp" />
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

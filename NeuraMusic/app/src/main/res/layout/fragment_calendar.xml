@@ -1,62 +1,135 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/calendar_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@color/background_dark"
-    android:padding="16dp">
+    android:background="@color/background_dark">
 
-    <!-- Encabezado -->
-    <TextView
-        android:id="@+id/tv_calendar_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Calendario"
-        android:textColor="@color/text_primary"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="8dp" />
-
-    <!-- Calendario mensual -->
-    <CalendarView
-        android:id="@+id/calendar_view"
+    <!-- Contenido scrollable -->
+    <ScrollView
+        android:id="@+id/calendar_scroll"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/edittext_background_dark"
-        android:layout_marginBottom="16dp" />
+        android:layout_height="match_parent"
+        android:padding="16dp"
+        android:clipToPadding="false"
+        android:fillViewport="true">
 
-    <!-- Día seleccionado -->
-    <TextView
-        android:id="@+id/tv_selected_date"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Eventos del día"
-        android:textColor="@color/accent_blue"
-        android:textSize="16sp"
-        android:textStyle="italic"
-        android:layout_marginBottom="8dp" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-    <!-- Lista de ítems del día -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler_day_items"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:paddingBottom="8dp" />
+            <!-- Cabecera con título y botón fijo -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp">
 
-    <!-- Botón flotante para añadir ítems -->
-    <ImageButton
-        android:id="@+id/btn_add_calendar_item"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
-        android:layout_gravity="end"
-        android:layout_margin="8dp"
-        android:backgroundTint="@color/accent_blue"
-        android:background="@drawable/fab_circle"
-        android:src="@android:drawable/ic_input_add"
-        android:tint="@color/white"
-        android:contentDescription="Añadir evento"
-        android:elevation="6dp" />
-</LinearLayout>
+                <TextView
+                    android:id="@+id/tv_calendar_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Calendario"
+                    android:textColor="@color/text_primary"
+                    android:textSize="24sp"
+                    android:textStyle="bold" />
+
+                <!-- FAB + -->
+                <ImageButton
+                    android:id="@+id/btn_add_calendar_item"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_alignParentEnd="true"
+                    android:background="@drawable/fab_circle"
+                    android:backgroundTint="@color/accent_blue"
+                    android:src="@android:drawable/ic_input_add"
+                    app:tint="@color/white"
+                    android:contentDescription="Añadir" />
+
+                <!-- Botón evento a la izquierda -->
+                <ImageButton
+                    android:id="@+id/btn_add_event"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_alignParentTop="true"
+                    android:layout_marginEnd="56dp"
+                    android:layout_alignParentEnd="true"
+                    android:visibility="gone"
+                    android:background="@drawable/fab_circle"
+                    android:backgroundTint="@color/gray"
+                    android:src="@drawable/ic_event"
+                    android:contentDescription="Añadir evento"
+                    app:tint="@color/white" />
+
+                <!-- Botón nota más a la izquierda -->
+                <ImageButton
+                    android:id="@+id/btn_add_note"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_alignParentTop="true"
+                    android:layout_marginEnd="104dp"
+                    android:layout_alignParentEnd="true"
+                    android:visibility="gone"
+                    android:background="@drawable/fab_circle"
+                    android:backgroundTint="@color/gray"
+                    android:src="@drawable/ic_note"
+                    android:contentDescription="Añadir nota"
+                    app:tint="@color/white" />
+            </RelativeLayout>
+
+            <!-- Calendario -->
+            <CalendarView
+                android:id="@+id/calendar_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/edittext_background_dark"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Texto eventos -->
+            <TextView
+                android:id="@+id/tv_selected_date"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Eventos del día"
+                android:textColor="@color/accent_blue"
+                android:textSize="16sp"
+                android:textStyle="italic"
+                android:layout_marginBottom="8dp" />
+
+            <!-- Lista de eventos -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler_day_items"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false"
+                android:paddingBottom="8dp" />
+
+            <!-- Separador -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="12dp"
+                android:background="@color/text_secondary" />
+
+            <!-- Título de notas -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Notas"
+                android:textColor="@color/text_primary"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:layout_marginBottom="8dp" />
+
+            <!-- Lista de notas -->
+            <LinearLayout
+                android:id="@+id/notes_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingBottom="80dp" />
+        </LinearLayout>
+    </ScrollView>
+</FrameLayout>

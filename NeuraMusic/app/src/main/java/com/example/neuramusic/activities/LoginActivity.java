@@ -21,13 +21,10 @@ import com.example.neuramusic.api.SupabaseService;
 import com.example.neuramusic.model.AuthRequest;
 import com.example.neuramusic.model.SupabaseSignupResponse;
 import com.example.neuramusic.model.UserResponse;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
-import java.lang.reflect.Type;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -37,6 +34,7 @@ import retrofit2.Response;
 public class LoginActivity extends AppCompatActivity {
 
     private static final String TAG = "LoginActivity";
+
     private EditText etEmail, etPassword;
     private Button btnLogin;
     private ImageButton btnTogglePassword;
@@ -44,14 +42,16 @@ public class LoginActivity extends AppCompatActivity {
     private boolean isPasswordVisible = false;
 
     private SupabaseService supabaseService;
-
-    private static final String SUPABASE_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4b3hoZG1paHlkam90c2dncGNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNzk3MjYsImV4cCI6MjA2Mzk1NTcyNn0.Cg4fm9x0NqlkSxtMTvMMFZJ-MNDoN1-u4ymKr7NdzR0";
+    private static final String SUPABASE_API_KEY = RetrofitClient.API_KEY;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
+        RetrofitClient.init(getApplicationContext());
+
+        SupabaseService authService = RetrofitClient.getSupabaseAuthService();
         supabaseService = RetrofitClient.getClient().create(SupabaseService.class);
 
         etEmail = findViewById(R.id.etEmail);
@@ -61,15 +61,10 @@ public class LoginActivity extends AppCompatActivity {
         tvRegisterLink = findViewById(R.id.tvRegisterLink);
 
         btnTogglePassword.setOnClickListener(v -> togglePasswordVisibility());
-        btnLogin.setOnClickListener(v -> attemptLogin());
-        tvRegisterLink.setOnClickListener(v -> startActivity(new Intent(LoginActivity.this, RegisterActivity.class)));
+        btnLogin.setOnClickListener(v -> attemptLogin(authService));
+        tvRegisterLink.setOnClickListener(v -> startActivity(new Intent(this, RegisterActivity.class)));
 
-        SharedPreferences prefs = getSharedPreferences("NeuraPrefs", Context.MODE_PRIVATE);
-        String savedToken = prefs.getString("access_token", null);
-        String savedUid = prefs.getString("user_id", null);
-        if (savedToken != null && savedUid != null) {
-            fetchUserData(savedUid, savedToken);
-        }
+        checkSessionAndAutoLogin();
     }
 
     private void togglePasswordVisibility() {
@@ -84,7 +79,7 @@ public class LoginActivity extends AppCompatActivity {
         etPassword.setSelection(etPassword.getText().length());
     }
 
-    private void attemptLogin() {
+    private void attemptLogin(SupabaseService authService) {
         String email = etEmail.getText().toString().trim();
         String password = etPassword.getText().toString().trim();
 
@@ -98,20 +93,18 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
-        // 🛡️ Admin local login
         if (isAdminLogin(email, password)) {
-            Intent intent = new Intent(LoginActivity.this, AdminHomeActivity.class);
-            startActivity(intent);
+            startActivity(new Intent(this, AdminHomeActivity.class));
             finish();
             return;
         }
 
         AuthRequest authRequest = new AuthRequest(email, password);
 
-        supabaseService.login(authRequest, SUPABASE_API_KEY).enqueue(new Callback<ResponseBody>() {
+        authService.login(authRequest, SUPABASE_API_KEY).enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                if (response.isSuccessful()) {
+                if (response.isSuccessful() && response.body() != null) {
                     try {
                         String json = response.body().string();
                         SupabaseSignupResponse loginResp = SupabaseSignupResponse.fromJson(json);
@@ -122,12 +115,15 @@ public class LoginActivity extends AppCompatActivity {
                         }
 
                         String uid = loginResp.user.id;
-                        String accessToken = loginResp.access_token;
+                        String token = loginResp.access_token;
 
-                        fetchUserData(uid, accessToken);
+                        RetrofitClient.setUid(uid);
+                        RetrofitClient.setAccessToken(token);
+
+                        fetchUserData(uid, token);
 
                     } catch (Exception e) {
-                        Log.e("LOGIN_PARSE", "Error parsing login JSON", e);
+                        Log.e(TAG, "Error parsing login JSON", e);
                         showToast("Error procesando la respuesta");
                     }
                 } else {
@@ -148,7 +144,7 @@ public class LoginActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
-                Log.e("LOGIN_FAIL", t.getMessage());
+                Log.e(TAG, "Login error", t);
                 showToast("Error de red al iniciar sesión");
             }
         });
@@ -159,50 +155,37 @@ public class LoginActivity extends AppCompatActivity {
         query.put("id", "eq." + uid);
 
         supabaseService.getUserById(query, SUPABASE_API_KEY, "Bearer " + accessToken)
-                .enqueue(new Callback<ResponseBody>() {
+                .enqueue(new Callback<List<UserResponse>>() {
                     @Override
-                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                        if (response.isSuccessful()) {
-                            try {
-                                String json = response.body().string();
-                                Type listType = new TypeToken<List<UserResponse>>() {}.getType();
-                                List<UserResponse> users = new Gson().fromJson(json, listType);
+                    public void onResponse(Call<List<UserResponse>> call, Response<List<UserResponse>> response) {
+                        if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                            UserResponse user = response.body().get(0);
 
-                                if (users != null && !users.isEmpty()) {
-                                    UserResponse user = users.get(0);
-
-                                    if (user.isBlocked) {
-                                        showToast("Cuenta bloqueada");
-                                        return;
-                                    }
-
-                                    if ("artista".equals(user.role)) {
-                                        launchActivity(ArtistHomeActivity.class, uid, accessToken, user.role);
-
-                                    } else if ("promotor".equals(user.role)) {
-                                        if (!user.isApproved) {
-                                            showToast("Cuenta de promotor no aprobada");
-                                            return;
-                                        }
-                                        launchActivity(PromoterHomeActivity.class, uid, accessToken, user.role);
-
-                                    } else {
-                                        showToast("Rol inválido. Contacta con soporte.");
-                                    }
-
-                                } else {
-                                    showToast("Usuario no encontrado");
-                                }
-                            } catch (Exception e) {
-                                showToast("Error leyendo datos del usuario");
+                            if (user.isBlocked) {
+                                showToast("Cuenta bloqueada");
+                                return;
                             }
+
+                            if ("artista".equals(user.role)) {
+                                launchActivity(ArtistHomeActivity.class, uid, accessToken, user.role);
+                            } else if ("promotor".equals(user.role)) {
+                                if (!user.isApproved) {
+                                    showToast("Cuenta de promotor no aprobada");
+                                    return;
+                                }
+                                launchActivity(PromoterHomeActivity.class, uid, accessToken, user.role);
+                            } else {
+                                showToast("Rol inválido. Contacta con soporte.");
+                            }
+
                         } else {
-                            showToast("Error obteniendo datos");
+                            showToast("Usuario no encontrado o respuesta inválida");
                         }
                     }
 
                     @Override
-                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                    public void onFailure(Call<List<UserResponse>> call, Throwable t) {
+                        Log.e(TAG, "Error al obtener usuario", t);
                         showToast("Fallo de red al obtener usuario");
                     }
                 });
@@ -216,7 +199,7 @@ public class LoginActivity extends AppCompatActivity {
                 .putString("user_role", role)
                 .apply();
 
-        Intent intent = new Intent(LoginActivity.this, activityClass);
+        Intent intent = new Intent(this, activityClass);
         intent.putExtra("user_id", uid);
         startActivity(intent);
         finish();
@@ -228,5 +211,43 @@ public class LoginActivity extends AppCompatActivity {
 
     private void showToast(String msg) {
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+    }
+
+    private void checkSessionAndAutoLogin() {
+        SharedPreferences prefs = getSharedPreferences("NeuraPrefs", Context.MODE_PRIVATE);
+        String uid = prefs.getString("user_id", null);
+        String token = prefs.getString("access_token", null);
+        String role = prefs.getString("user_role", null);
+
+        if (uid != null && token != null && role != null) {
+            RetrofitClient.setUid(uid);
+            RetrofitClient.setAccessToken(token);
+
+            Class<?> target;
+
+            switch (role) {
+                case "artista":
+                    target = ArtistHomeActivity.class;
+                    break;
+                case "promotor":
+                    target = PromoterHomeActivity.class;
+                    break;
+                case "admin":
+                    target = AdminHomeActivity.class;
+                    break;
+                default:
+                    target = null;
+                    break;
+            }
+
+            if (target != null) {
+                Intent intent = new Intent(this, target);
+                intent.putExtra("user_id", uid);
+                startActivity(intent);
+                finish();
+            } else {
+                showToast("Rol inválido, haz login manual.");
+            }
+        }
     }
 }

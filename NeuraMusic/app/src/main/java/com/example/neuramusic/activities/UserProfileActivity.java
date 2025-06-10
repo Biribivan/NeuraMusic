@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.WebView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -64,6 +65,11 @@ public class UserProfileActivity extends AppCompatActivity {
     private SupabaseService supabaseService;
     private SharedPreferences prefs;
 
+    private WebView webViewYoutube;
+    private ImageButton btnCloseWebView;
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -103,12 +109,20 @@ public class UserProfileActivity extends AppCompatActivity {
         fabAddMedia = findViewById(R.id.fabAddMedia);
         fabAddAudio = findViewById(R.id.fabAddAudio);
         layoutFanButtons = findViewById(R.id.layoutFanButtons);
-        
+        webViewYoutube = findViewById(R.id.webViewYoutube);
+        btnCloseWebView = findViewById(R.id.btnCloseWebView);
+
+
         btnBack.setOnClickListener(v -> onBackPressed());
         
         // Configurar menú de opciones
         ImageButton btnOptions = findViewById(R.id.btnOptions);
         btnOptions.setOnClickListener(v -> showOptionsMenu(v));
+        btnCloseWebView.setOnClickListener(v -> {
+            webViewYoutube.setVisibility(View.GONE);
+            btnCloseWebView.setVisibility(View.VISIBLE);
+            webViewYoutube.loadUrl("about:blank");
+        });
         
         // Configurar botones flotantes
         fabAdd.setOnClickListener(v -> toggleFanButtons());
@@ -153,39 +167,26 @@ public class UserProfileActivity extends AppCompatActivity {
         query.put("id", "eq." + userId);
 
         supabaseService.getUserById(query, RetrofitClient.API_KEY, "Bearer " + accessToken)
-            .enqueue(new Callback<ResponseBody>() {
-                @Override
-                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                    if (response.isSuccessful() && response.body() != null) {
-                        try {
-                            String json = response.body().string();
-                            Type listType = new TypeToken<List<UserResponse>>() {}.getType();
-                            List<UserResponse> users = new Gson().fromJson(json, listType);
-
-                            if (!users.isEmpty()) {
-                                UserResponse user = users.get(0);
-                                populateUserInfo(user);
-                                Log.d(TAG, "Perfil cargado exitosamente");
-                            } else {
-                                Log.e(TAG, "Lista de usuarios vacía");
-                                showError("No se encontró el perfil");
-                            }
-                        } catch (Exception e) {
-                            Log.e(TAG, "Error al procesar respuesta: " + e.getMessage());
-                            showError("Error al cargar el perfil");
+                .enqueue(new Callback<List<UserResponse>>() {
+                    @Override
+                    public void onResponse(Call<List<UserResponse>> call, Response<List<UserResponse>> response) {
+                        if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                            UserResponse user = response.body().get(0);
+                            populateUserInfo(user);
+                            Log.d(TAG, "Perfil cargado exitosamente");
+                        } else {
+                            Log.e(TAG, "Lista de usuarios vacía o error en la respuesta: " + response.code());
+                            showError("No se encontró el perfil");
                         }
-                    } else {
-                        Log.e(TAG, "Error en la respuesta: " + response.code());
-                        showError("Error al cargar el perfil");
                     }
-                }
 
-                @Override
-                public void onFailure(Call<ResponseBody> call, Throwable t) {
-                    Log.e(TAG, "Error de conexión: " + t.getMessage());
-                    showError("Error de conexión");
-                }
-            });
+                    @Override
+                    public void onFailure(Call<List<UserResponse>> call, Throwable t) {
+                        Log.e(TAG, "Error de conexión: " + t.getMessage(), t);
+                        showError("Error de conexión");
+                    }
+                });
+
     }
 
     private void populateUserInfo(UserResponse user) {
@@ -243,7 +244,38 @@ public class UserProfileActivity extends AppCompatActivity {
 
         // Configuración de redes sociales
         setupSocialLink(btnInstagram, user.instagram, "Instagram");
-        setupSocialLink(btnYoutube, user.youtube, "YouTube");
+        if (user.youtube != null && !user.youtube.isEmpty()) {
+            btnYoutube.setVisibility(View.VISIBLE);
+            btnYoutube.setOnClickListener(v -> {
+                try {
+                    String youtubeUrl = user.youtube;
+
+                    // Convertir a formato embebido si es necesario
+                    if (youtubeUrl.contains("youtu.be/")) {
+                        String videoId = youtubeUrl.substring(youtubeUrl.lastIndexOf("/") + 1);
+                        youtubeUrl = "https://www.youtube.com/embed/" + videoId;
+                    } else if (youtubeUrl.contains("watch?v=")) {
+                        String videoId = youtubeUrl.substring(youtubeUrl.indexOf("watch?v=") + 8);
+                        if (videoId.contains("&")) {
+                            videoId = videoId.substring(0, videoId.indexOf("&"));
+                        }
+                        youtubeUrl = "https://www.youtube.com/embed/" + videoId;
+                    }
+
+                    // Configurar WebView
+                    webViewYoutube.setVisibility(View.VISIBLE);
+                    webViewYoutube.getSettings().setJavaScriptEnabled(true);
+                    webViewYoutube.loadUrl(youtubeUrl);
+                } catch (Exception e) {
+                    Log.e(TAG, "Error al cargar video YouTube embebido: " + e.getMessage());
+                    showError("No se pudo cargar el video de YouTube");
+                }
+            });
+        } else {
+            btnYoutube.setVisibility(View.GONE);
+            webViewYoutube.setVisibility(View.GONE);
+        }
+
         setupSocialLink(btnSpotify, user.spotify, "Spotify");
         setupSocialLink(btnSoundcloud, user.soundcloud, "SoundCloud");
     }

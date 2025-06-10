@@ -1,6 +1,5 @@
 package com.example.neuramusic.model;
 
-import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;
 import java.util.List;
 
@@ -54,22 +53,8 @@ public class UserResponse {
     @SerializedName("is_approved")
     public boolean isApproved;
 
-    // Constructor vacío requerido por Gson
     public UserResponse() {}
 
-    // Método utilitario para parsear JSON
-    public static UserResponse fromJson(String json) {
-        try {
-            // Supabase devuelve un array de usuarios
-            UserResponse[] arr = new Gson().fromJson(json, UserResponse[].class);
-            return arr.length > 0 ? arr[0] : null;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    // Opcional: para logs/debug
     @Override
     public String toString() {
         return "UserResponse{" +

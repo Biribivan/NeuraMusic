@@ -1,8 +1,3 @@
-// 👇 CAMBIOS REALIZADOS:
-// - Foto de perfil ya no es obligatoria
-// - Manejamos error "al registrarse" con más detalle
-// - Si no hay imagen, no se sube nada y se manda profile_image_url vacío
-
 package com.example.neuramusic.activities;
 
 import android.app.DatePickerDialog;
@@ -63,14 +58,17 @@ public class RegisterActivity extends AppCompatActivity {
     private SupabaseService supabaseService;
 
     private static final String SUPABASE_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4b3hoZG1paHlkam90c2dncGNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNzk3MjYsImV4cCI6MjA2Mzk1NTcyNn0.Cg4fm9x0NqlkSxtMTvMMFZJ-MNDoN1-u4ymKr7NdzR0";
-    private static final String SUPABASE_BUCKET_URL = "https://tu-proyecto.supabase.co/storage/v1/object/public/user-images/";
+    private static final String SUPABASE_BUCKET_URL = "https://lxoxhdmihydjotsggpco.supabase.co/storage/v1/object/public/user-images/";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_register);
 
+        setContentView(R.layout.activity_register);
+        RetrofitClient.init(getApplicationContext());
         supabaseService = RetrofitClient.getClient().create(SupabaseService.class);
+
+
 
         etEmail = findViewById(R.id.etEmail);
         etEmailConfirm = findViewById(R.id.etEmailConfirm);
@@ -220,7 +218,7 @@ public class RegisterActivity extends AppCompatActivity {
                             try {
                                 String json = response.body().string();
                                 // Construir la URL pública de la imagen
-                                String publicUrl = "https://lxoxhdmihydjotsggpco.supabase.co/storage/v1/object/public/user-images/" + filename;
+                                String publicUrl = SUPABASE_BUCKET_URL + filename;
                                 insertUserData(uid, email, accessToken, publicUrl);
                             } catch (Exception e) {
                                 Log.e(TAG, "Error al procesar URL de imagen: " + e.getMessage());
@@ -258,36 +256,45 @@ public class RegisterActivity extends AppCompatActivity {
         userData.put("email", email);
         userData.put("username", username);
         userData.put("role", "artista");
-        userData.put("bio", bio);
-        userData.put("birth_date", dob);
-        userData.put("instagram_url", instagram);
-        userData.put("soundcloud_url", soundcloud);
-        userData.put("spotify_url", spotify);
-        userData.put("youtube_url", youtube);
-        userData.put("is_blocked", false);
-        userData.put("is_approved", true);
+        userData.put("is_blocked", false);  // correcto
+        userData.put("is_approved", true);  // correcto
         userData.put("profile_image_url", imageUrl);
-        userData.put("professions", new ArrayList<String>()); // Inicializar lista vacía de profesiones
+        userData.put("professions", new ArrayList<String>());
 
-        supabaseService.updateUser(uid, SUPABASE_API_KEY, "Bearer " + accessToken, userData)
-            .enqueue(new Callback<ResponseBody>() {
-                @Override
-                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                    if (response.isSuccessful()) {
-                        showToast("Usuario registrado correctamente");
-                        startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
-                        finish();
-                    } else {
-                        showToast("Error al insertar datos del usuario");
-                    }
-                }
+        if (!bio.isEmpty()) userData.put("bio", bio);
+        if (!dob.isEmpty()) userData.put("birth_date", dob);
+        if (!instagram.isEmpty()) userData.put("instagram", instagram);
+        if (!soundcloud.isEmpty()) userData.put("soundcloud", soundcloud);
+        if (!spotify.isEmpty()) userData.put("spotify", spotify);
+        if (!youtube.isEmpty()) userData.put("youtube", youtube);
 
-                @Override
-                public void onFailure(Call<ResponseBody> call, Throwable t) {
-                    showToast("Error de conexión al insertar datos");
+
+        supabaseService.insertUser(
+                        SUPABASE_API_KEY,
+                        "Bearer " + accessToken,
+                        userData
+                )
+                .enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.isSuccessful()) {
+                    showToast("Usuario registrado correctamente");
+                    startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
+                    finish();
+                } else {
+                    showToast("Error al insertar datos del usuario");
+                    Log.e("Register", "Error: " + response.code());
                 }
-            });
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                showToast("Error de conexión al insertar datos");
+                Log.e("Register", "Network failure: ", t);
+            }
+        });
     }
+
 
     private String getRealPathFromURI(Uri uri) {
         String[] proj = { MediaStore.Images.Media.DATA };

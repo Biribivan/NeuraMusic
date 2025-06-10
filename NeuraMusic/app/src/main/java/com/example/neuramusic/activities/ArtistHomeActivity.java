@@ -112,21 +112,12 @@ public class ArtistHomeActivity extends AppCompatActivity {
         query.put("id", "eq." + userId);
 
         supabaseService.getUserById(query, RetrofitClient.API_KEY, "Bearer " + token)
-                .enqueue(new Callback<ResponseBody>() {
+                .enqueue(new Callback<List<UserResponse>>() {
                     @Override
-                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                        if (response.isSuccessful() && response.body() != null) {
-                            try {
-                                String json = response.body().string();
-                                Type listType = new TypeToken<List<UserResponse>>() {}.getType();
-                                List<UserResponse> users = new Gson().fromJson(json, listType);
-                                if (!users.isEmpty()) {
-                                    updateUI(users.get(0));
-                                }
-                            } catch (Exception e) {
-                                Log.e(TAG, "Error al parsear respuesta", e);
-                                Toast.makeText(ArtistHomeActivity.this, "Error al cargar datos", Toast.LENGTH_SHORT).show();
-                            }
+                    public void onResponse(Call<List<UserResponse>> call, Response<List<UserResponse>> response) {
+                        if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                            UserResponse user = response.body().get(0);
+                            updateUI(user);
                         } else {
                             Log.e(TAG, "Error en la respuesta: " + response.code());
                             Toast.makeText(ArtistHomeActivity.this, "Error al cargar datos", Toast.LENGTH_SHORT).show();
@@ -134,11 +125,12 @@ public class ArtistHomeActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                    public void onFailure(Call<List<UserResponse>> call, Throwable t) {
                         Log.e(TAG, "Error de red", t);
                         Toast.makeText(ArtistHomeActivity.this, "Error de conexión", Toast.LENGTH_SHORT).show();
                     }
                 });
+
     }
 
     private void updateUI(UserResponse user) {

@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -15,6 +16,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.neuramusic.R;
 import com.example.neuramusic.adapters.FeedAdapter;
@@ -24,17 +26,14 @@ import com.example.neuramusic.model.FeedPost;
 import com.example.neuramusic.model.MediaPost;
 import com.example.neuramusic.model.TextPost;
 import com.example.neuramusic.model.UserResponse;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -47,6 +46,10 @@ public class HomeFragment extends Fragment {
     private final List<FeedPost> feedPosts = new ArrayList<>();
     private SupabaseService supabaseService;
     private String token;
+    private SwipeRefreshLayout swipeRefreshLayout;
+    private TextView tvEmpty;
+
+
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -57,9 +60,17 @@ public class HomeFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        swipeRefreshLayout = view.findViewById(R.id.swipeRefresh);
+        tvEmpty = view.findViewById(R.id.tv_empty);
+
+        swipeRefreshLayout.setOnRefreshListener(() -> loadFeed());
+
+
         recyclerView = view.findViewById(R.id.recycler_feed);
-        progressBar = view.findViewById(R.id.progress_loading);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView.setHasFixedSize(true);
+        progressBar = view.findViewById(R.id.progress_loading);
+
         adapter = new FeedAdapter(feedPosts);
         recyclerView.setAdapter(adapter);
 
@@ -83,28 +94,29 @@ public class HomeFragment extends Fragment {
         query.put("order", "created_at.desc");
 
         supabaseService.getTextPosts(query, RetrofitClient.API_KEY, "Bearer " + token)
-            .enqueue(new Callback<List<TextPost>>() {
-                @Override
-                public void onResponse(Call<List<TextPost>> call, Response<List<TextPost>> response) {
-                    if (response.isSuccessful() && response.body() != null) {
-                        for (TextPost tp : response.body()) {
-                            FeedPost fp = new FeedPost(null, tp.getContent(), null, tp.getCreatedAt(), false);
-                            fp.user = new UserResponse();
-                            fp.user.uid = tp.getUserId();
-                            feedPosts.add(fp);
+                .enqueue(new Callback<List<TextPost>>() {
+                    @Override
+                    public void onResponse(Call<List<TextPost>> call, Response<List<TextPost>> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            for (TextPost tp : response.body()) {
+                                FeedPost fp = new FeedPost(null, tp.getContent(), null, tp.getCreatedAt(), false, null);
+                                fp.user = new UserResponse();
+                                fp.user.uid = tp.getUserId();
+                                feedPosts.add(fp);
+                            }
+                            Log.d("HomeFragment", "Text posts cargados: " + feedPosts.size());
+                            loadMediaPosts();
+                        } else {
+                            showError();
                         }
-                        loadMediaPosts();
-                    } else {
+                    }
+
+                    @Override
+                    public void onFailure(Call<List<TextPost>> call, Throwable t) {
+                        Log.e("HomeFragment", "Error cargando posts de texto", t);
                         showError();
                     }
-                }
-
-                @Override
-                public void onFailure(Call<List<TextPost>> call, Throwable t) {
-                    Log.e("HomeFragment", "Error cargando posts de texto", t);
-                    showError();
-                }
-            });
+                });
     }
 
     private void loadMediaPosts() {
@@ -112,28 +124,30 @@ public class HomeFragment extends Fragment {
         query.put("order", "created_at.desc");
 
         supabaseService.getMediaPosts(query, RetrofitClient.API_KEY, "Bearer " + token)
-            .enqueue(new Callback<List<MediaPost>>() {
-                @Override
-                public void onResponse(Call<List<MediaPost>> call, Response<List<MediaPost>> response) {
-                    if (response.isSuccessful() && response.body() != null) {
-                        for (MediaPost mp : response.body()) {
-                            FeedPost fp = new FeedPost(null, mp.getCaption(), mp.getMediaUrls(), mp.getCreatedAt(), true);
-                            fp.user = new UserResponse();
-                            fp.user.uid = mp.getUserId();
-                            feedPosts.add(fp);
+                .enqueue(new Callback<List<MediaPost>>() {
+                    @Override
+                    public void onResponse(Call<List<MediaPost>> call, Response<List<MediaPost>> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            for (MediaPost mp : response.body()) {
+                                FeedPost fp = new FeedPost(null, mp.getCaption(), mp.getMediaUrls(), mp.getCreatedAt(), true, mp.getContent());
+
+                                fp.user = new UserResponse();
+                                fp.user.uid = mp.getUserId();
+                                feedPosts.add(fp);
+                            }
+                            Log.d("HomeFragment", "Media posts cargados: " + response.body().size());
+                            fetchUsers();
+                        } else {
+                            showError();
                         }
-                        fetchUsers();
-                    } else {
+                    }
+
+                    @Override
+                    public void onFailure(Call<List<MediaPost>> call, Throwable t) {
+                        Log.e("HomeFragment", "Error cargando posts multimedia", t);
                         showError();
                     }
-                }
-
-                @Override
-                public void onFailure(Call<List<MediaPost>> call, Throwable t) {
-                    Log.e("HomeFragment", "Error cargando posts multimedia", t);
-                    showError();
-                }
-            });
+                });
     }
 
     private void fetchUsers() {
@@ -142,42 +156,58 @@ public class HomeFragment extends Fragment {
             return;
         }
 
-        final int[] remaining = {feedPosts.size()};
+        AtomicInteger remaining = new AtomicInteger(feedPosts.size());
         for (FeedPost post : feedPosts) {
             Map<String, String> q = new HashMap<>();
             q.put("id", "eq." + post.user.uid);
-            supabaseService.getUserById(q, RetrofitClient.API_KEY, "Bearer " + token)
-                .enqueue(new Callback<ResponseBody>() {
-                    @Override
-                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                        if (response.isSuccessful() && response.body() != null) {
-                            try {
-                                String json = response.body().string();
-                                Type listType = new TypeToken<List<UserResponse>>(){}.getType();
-                                List<UserResponse> users = new Gson().fromJson(json, listType);
-                                if (!users.isEmpty()) {
-                                    post.user = users.get(0);
-                                }
-                            } catch (Exception e) {
-                                Log.e("HomeFragment", "Error parseando usuario", e);
-                            }
-                        }
-                        if (--remaining[0] == 0) updateFeed();
-                    }
 
-                    @Override
-                    public void onFailure(Call<ResponseBody> call, Throwable t) {
-                        Log.e("HomeFragment", "Error obteniendo usuario", t);
-                        if (--remaining[0] == 0) updateFeed();
-                    }
-                });
+            supabaseService.getUserById(q, RetrofitClient.API_KEY, "Bearer " + token)
+                    .enqueue(new Callback<List<UserResponse>>() {
+                        @Override
+                        public void onResponse(Call<List<UserResponse>> call, Response<List<UserResponse>> response) {
+                            if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                                post.user = response.body().get(0);
+                                Log.d("UsuarioCargado", post.user.toString());
+                            } else {
+                                Log.w("UsuarioCargado", "Usuario no encontrado para uid=" + post.user.uid);
+                            }
+
+                            if (remaining.decrementAndGet() == 0) updateFeed();
+                        }
+
+                        @Override
+                        public void onFailure(Call<List<UserResponse>> call, Throwable t) {
+                            Log.e("HomeFragment", "Error obteniendo usuario con id=" + post.user.uid, t);
+                            if (remaining.decrementAndGet() == 0) updateFeed();
+                        }
+                    });
         }
     }
 
     private void updateFeed() {
-        Collections.sort(feedPosts, (a, b) -> b.createdAt.compareToIgnoreCase(a.createdAt));
+        Log.d("HomeFragment", "Actualizando feed con " + feedPosts.size() + " posts");
+        swipeRefreshLayout.setRefreshing(false);
+        progressBar.setVisibility(View.GONE);
+
+        if (feedPosts.isEmpty()) {
+            tvEmpty.setVisibility(View.VISIBLE);
+        } else {
+            tvEmpty.setVisibility(View.GONE);
+            adapter.notifyDataSetChanged();
+        }
+
+        Collections.sort(feedPosts, (a, b) -> {
+            if (a.createdAt == null) return 1;
+            if (b.createdAt == null) return -1;
+            return b.createdAt.compareToIgnoreCase(a.createdAt);
+        });
+
         adapter.notifyDataSetChanged();
         progressBar.setVisibility(View.GONE);
+
+        if (feedPosts.isEmpty()) {
+            Toast.makeText(getContext(), "No hay publicaciones disponibles", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void showError() {

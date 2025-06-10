@@ -10,8 +10,10 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.example.neuramusic.R;
 import com.example.neuramusic.model.FeedPost;
+import com.example.neuramusic.model.UserResponse;
 
 import java.util.List;
 
@@ -34,38 +36,60 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
     @Override
     public void onBindViewHolder(@NonNull FeedViewHolder holder, int position) {
         FeedPost post = posts.get(position);
+        UserResponse user = post.user;
 
-        holder.tvUsername.setText(post.user != null ? post.user.username : "");
-        if (post.user != null && post.user.profileImageUrl != null && !post.user.profileImageUrl.isEmpty()) {
+        // Username
+        String username = (user != null && user.username != null) ? user.username : "Usuario desconocido";
+        holder.tvUsername.setText(username);
+
+        // Avatar
+        if (user != null && user.profileImageUrl != null && !user.profileImageUrl.isEmpty()) {
             Glide.with(holder.itemView.getContext())
-                    .load(post.user.profileImageUrl)
+                    .load(user.profileImageUrl)
                     .placeholder(R.drawable.ic_user)
+                    .error(R.drawable.ic_user)
                     .circleCrop()
+                    .transition(DrawableTransitionOptions.withCrossFade())
                     .into(holder.ivAvatar);
         } else {
             holder.ivAvatar.setImageResource(R.drawable.ic_user);
         }
 
+        // Caption (pie de foto)
+        if (post.caption != null && !post.caption.trim().isEmpty()) {
+            holder.tvCaption.setText(post.caption.trim());
+            holder.tvCaption.setVisibility(View.VISIBLE);
+        } else {
+            holder.tvCaption.setVisibility(View.GONE);
+        }
+
+        // Content
         holder.tvContent.setText(post.content != null ? post.content : "");
 
+        // Media (solo si es post multimedia y hay al menos 1 media URL)
         if (post.isMedia && post.mediaUrls != null && !post.mediaUrls.isEmpty()) {
             holder.ivMedia.setVisibility(View.VISIBLE);
             Glide.with(holder.itemView.getContext())
                     .load(post.mediaUrls.get(0))
+                    .centerCrop()
+                    .placeholder(R.drawable.placeholder_media)
+                    .transition(DrawableTransitionOptions.withCrossFade())
                     .into(holder.ivMedia);
         } else {
+            holder.ivMedia.setImageResource(0);
             holder.ivMedia.setVisibility(View.GONE);
         }
     }
 
     @Override
     public int getItemCount() {
-        return posts.size();
+        return posts != null ? posts.size() : 0;
     }
 
     static class FeedViewHolder extends RecyclerView.ViewHolder {
         ImageView ivAvatar;
         TextView tvUsername;
+        TextView tvCaption;
         TextView tvContent;
         ImageView ivMedia;
 
@@ -73,6 +97,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
             super(itemView);
             ivAvatar = itemView.findViewById(R.id.ivAvatar);
             tvUsername = itemView.findViewById(R.id.tvUsername);
+            tvCaption = itemView.findViewById(R.id.tvCaption);
             tvContent = itemView.findViewById(R.id.tvContent);
             ivMedia = itemView.findViewById(R.id.ivMedia);
         }

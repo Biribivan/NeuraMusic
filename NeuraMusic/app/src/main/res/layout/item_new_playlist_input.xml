@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="horizontal"
+    android:paddingVertical="8dp"
+    android:paddingHorizontal="16dp"
+    android:background="@color/background_dark"
+    android:gravity="center_vertical">
+
+    <!-- Icono de playlist -->
+    <ImageView
+        android:id="@+id/iv_playlist_icon"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@drawable/ic_playlist"
+        android:layout_marginEnd="12dp"
+        app:tint="@color/white" />
+
+    <!-- Campo de texto -->
+    <EditText
+        android:id="@+id/et_playlist_title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:hint="Nombre de la playlist"
+        android:textColor="@color/white"
+        android:textColorHint="@color/text_secondary"
+        android:background="@android:color/transparent"
+        android:textSize="16sp"
+        android:inputType="textCapWords"
+        android:paddingVertical="8dp" />
+
+    <!-- Botón eliminar -->
+    <ImageButton
+        android:id="@+id/btn_delete_playlist"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:src="@drawable/ic_delete"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="Eliminar playlist"
+
+        android:layout_marginStart="8dp" />
+</LinearLayout>

@@ -19,6 +19,7 @@ import com.bumptech.glide.Glide;
 import com.example.neuramusic.R;
 import com.example.neuramusic.api.RetrofitClient;
 import com.example.neuramusic.api.SupabaseService;
+import com.example.neuramusic.auth.AuthSession;
 import com.example.neuramusic.fragments.CalendarFragment;
 import com.example.neuramusic.fragments.HomeFragment;
 import com.example.neuramusic.fragments.LibraryFragment;
@@ -38,10 +39,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-/**
- * Main activity displayed after login. Hosts the feed and other sections
- * using a BottomNavigationView similar to Instagram.
- */
+
 public class HomeActivity extends AppCompatActivity {
 
     private static final String TAG = "HomeActivity";
@@ -56,6 +54,7 @@ public class HomeActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
@@ -79,6 +78,10 @@ public class HomeActivity extends AppCompatActivity {
         SharedPreferences prefs = getSharedPreferences("NeuraPrefs", MODE_PRIVATE);
         uid = prefs.getString("user_id", null);
         token = prefs.getString("access_token", null);
+        if (uid != null && token != null) {
+            AuthSession.setSession(token, null, uid);
+            loadUserData(uid, token);
+        }
 
         if (uid != null && token != null) {
             loadUserData(uid, token);
@@ -91,7 +94,11 @@ public class HomeActivity extends AppCompatActivity {
             } else if (id == R.id.nav_search) {
                 loadFragment(new SearchFragment());
             } else if (id == R.id.nav_library) {
-                loadFragment(new LibraryFragment());
+                if (uid != null && token != null) {
+                    loadFragment(new LibraryFragment());
+                } else {
+                    Toast.makeText(this, "No se ha iniciado sesión correctamente", Toast.LENGTH_SHORT).show();
+                }
             } else if (id == R.id.nav_calendar) {
                 if (uid != null && token != null) {
                     loadFragment(new CalendarFragment(token, uid));
@@ -112,21 +119,12 @@ public class HomeActivity extends AppCompatActivity {
         query.put("id", "eq." + userId);
 
         supabaseService.getUserById(query, RetrofitClient.API_KEY, "Bearer " + token)
-                .enqueue(new Callback<ResponseBody>() {
+                .enqueue(new Callback<List<UserResponse>>() {
                     @Override
-                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                        if (response.isSuccessful() && response.body() != null) {
-                            try {
-                                String json = response.body().string();
-                                Type listType = new TypeToken<List<UserResponse>>(){}.getType();
-                                List<UserResponse> users = new Gson().fromJson(json, listType);
-                                if (!users.isEmpty()) {
-                                    updateUI(users.get(0));
-                                }
-                            } catch (Exception e) {
-                                Log.e(TAG, "Error al parsear respuesta", e);
-                                Toast.makeText(HomeActivity.this, "Error al cargar datos", Toast.LENGTH_SHORT).show();
-                            }
+                    public void onResponse(Call<List<UserResponse>> call, Response<List<UserResponse>> response) {
+                        if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                            UserResponse user = response.body().get(0);
+                            updateUI(user);
                         } else {
                             Log.e(TAG, "Error en la respuesta: " + response.code());
                             Toast.makeText(HomeActivity.this, "Error al cargar datos", Toast.LENGTH_SHORT).show();
@@ -134,11 +132,12 @@ public class HomeActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                    public void onFailure(Call<List<UserResponse>> call, Throwable t) {
                         Log.e(TAG, "Error de red", t);
                         Toast.makeText(HomeActivity.this, "Error de conexión", Toast.LENGTH_SHORT).show();
                     }
                 });
+
     }
 
     private void updateUI(UserResponse user) {

@@ -41,6 +41,8 @@
         <activity android:name=".activities.UserProfileActivity" android:exported="false" />
         <activity android:name=".activities.EditorActivity" android:exported="false" />
         <activity android:name=".activities.AddTextActivity" android:exported="false" />
+        <activity android:name=".activities.PlaylistDetailActivity" />
+
         <activity
             android:name=".activities.AddMediaActivity"
             android:exported="false"
@@ -53,8 +55,7 @@
             android:resizeableActivity="true"
             android:theme="@style/Theme.NeuraMusic.Fullscreen" />
 
-        <!-- NUEVA ACTIVITY para el calendario -->
-        <activity android:name=".ui.calendar.CalendarActivity" android:exported="false" />
+
 
     </application>
 

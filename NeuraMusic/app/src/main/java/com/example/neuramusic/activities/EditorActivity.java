@@ -34,6 +34,7 @@ import com.bumptech.glide.request.target.Target;
 import com.example.neuramusic.R;
 import com.example.neuramusic.api.RetrofitClient;
 import com.example.neuramusic.api.SupabaseService;
+import com.example.neuramusic.auth.AuthSession;
 import com.example.neuramusic.model.UserResponse;
 import com.example.neuramusic.utils.SocialMediaValidator;
 import com.google.android.material.textfield.TextInputEditText;
@@ -217,32 +218,23 @@ public class EditorActivity extends AppCompatActivity {
         query.put("id", "eq." + userId);
 
         supabaseService.getUserById(query, RetrofitClient.API_KEY, "Bearer " + accessToken)
-            .enqueue(new Callback<ResponseBody>() {
+                .enqueue(new Callback<List<UserResponse>>() {
                     @Override
-                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                        if (response.isSuccessful() && response.body() != null) {
-                        try {
-                            String json = response.body().string();
-                            Type listType = new TypeToken<List<UserResponse>>() {}.getType();
-                            List<UserResponse> users = new Gson().fromJson(json, listType);
-
-                            if (!users.isEmpty()) {
-                                UserResponse user = users.get(0);
-                                populateFields(user);
-                            }
-                        } catch (Exception e) {
-                            Toast.makeText(EditorActivity.this, 
-                                "Error al cargar datos", Toast.LENGTH_SHORT).show();
-                        }
+                    public void onResponse(Call<List<UserResponse>> call, Response<List<UserResponse>> response) {
+                        if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                            UserResponse user = response.body().get(0);
+                            populateFields(user);
+                        } else {
+                            Toast.makeText(EditorActivity.this, "No se pudo cargar el usuario", Toast.LENGTH_SHORT).show();
                         }
                     }
 
                     @Override
-                public void onFailure(Call<ResponseBody> call, Throwable t) {
-                    Toast.makeText(EditorActivity.this, 
-                        "Error de conexión", Toast.LENGTH_SHORT).show();
+                    public void onFailure(Call<List<UserResponse>> call, Throwable t) {
+                        Toast.makeText(EditorActivity.this, "Error de conexión", Toast.LENGTH_SHORT).show();
                     }
                 });
+
     }
 
     private void populateFields(UserResponse user) {
@@ -531,65 +523,69 @@ public class EditorActivity extends AppCompatActivity {
 
     private void saveProfile(Map<String, Object> updates) {
         Log.d(TAG, "Guardando perfil con datos: " + updates.toString());
-        
+
         // Agregar timestamp de actualización
         updates.put("updated_at", new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US)
-            .format(new Date()));
-        
-        String filterId = "eq." + userId;
-        supabaseService.updateUser(filterId, RetrofitClient.API_KEY, "Bearer " + accessToken, updates)
-            .enqueue(new Callback<ResponseBody>() {
-                @Override
-                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                    if (response.isSuccessful()) {
-                        Log.d(TAG, "Perfil actualizado exitosamente");
-                        Toast.makeText(EditorActivity.this, 
-                            "Perfil actualizado", Toast.LENGTH_SHORT).show();
-                        finish();
-                    } else {
-                        try {
-                            String errorBody = response.errorBody() != null ? 
-                                response.errorBody().string() : "Error desconocido";
-                            Log.e(TAG, "Error al actualizar perfil. Código: " + response.code() + 
-                                ", Error: " + errorBody);
-                            Log.e(TAG, "URL de la petición: " + call.request().url());
-                            Log.e(TAG, "Headers de la petición: " + call.request().headers());
-                            Log.e(TAG, "Cuerpo de la petición: " + new Gson().toJson(updates));
-                            
-                            // Intentar parsear el mensaje de error
-                            try {
-                                JSONObject errorJson = new JSONObject(errorBody);
-                                String message = errorJson.optString("message", "Error al guardar cambios");
-                                String code = errorJson.optString("code", "");
-                                String details = errorJson.optString("details", "");
-                                
-                                String errorMessage = "Error: " + message;
-                                if (!code.isEmpty()) errorMessage += " (Código: " + code + ")";
-                                if (!details.isEmpty()) errorMessage += "\nDetalles: " + details;
-                                
-                                Toast.makeText(EditorActivity.this, errorMessage, Toast.LENGTH_LONG).show();
-                            } catch (Exception e) {
-                                Toast.makeText(EditorActivity.this, 
-                                    "Error al guardar cambios (" + response.code() + "): " + errorBody, 
-                                    Toast.LENGTH_LONG).show();
-                            }
-                        } catch (Exception e) {
-                            Log.e(TAG, "Error al leer respuesta de error: " + e.getMessage());
-                            Toast.makeText(EditorActivity.this, 
-                                "Error al guardar cambios. Código: " + response.code(), 
-                                Toast.LENGTH_LONG).show();
-                        }
-                    }
-                }
+                .format(new Date()));
 
-                @Override
-                public void onFailure(Call<ResponseBody> call, Throwable t) {
-                    Log.e(TAG, "Error de red al actualizar perfil: " + t.getMessage());
-                    Log.e(TAG, "Stacktrace: ", t);
-                    Toast.makeText(EditorActivity.this, 
-                        "Error de conexión: " + t.getMessage(), 
-                        Toast.LENGTH_LONG).show();
-                    }
-                });
+        // Refrescar token si es necesario
+        if (AuthSession.refreshSessionIfNeeded()) {
+            // Token actualizado correctamente, proceder con la actualización
+            String filterId = "eq." + AuthSession.uid;
+            supabaseService.updateUser(filterId, AuthSession.API_KEY, AuthSession.getBearerToken(), updates)
+                    .enqueue(new Callback<ResponseBody>() {
+                        @Override
+                        public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                            if (response.isSuccessful()) {
+                                Log.d(TAG, "Perfil actualizado exitosamente");
+                                Toast.makeText(EditorActivity.this, "Perfil actualizado", Toast.LENGTH_SHORT).show();
+                                finish();
+                            } else {
+                                handleErrorResponse(call, response, updates);
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<ResponseBody> call, Throwable t) {
+                            Log.e(TAG, "Error de red al actualizar perfil: " + t.getMessage(), t);
+                            Toast.makeText(EditorActivity.this, "Error de conexión: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                        }
+                    });
+        } else {
+            Log.e(TAG, "Token expirado y no se pudo refrescar.");
+            Toast.makeText(EditorActivity.this, "Sesión expirada. Inicia sesión de nuevo", Toast.LENGTH_LONG).show();
+            AuthSession.clear();
+            startActivity(new Intent(EditorActivity.this, LoginActivity.class));
+            finish();
+        }
     }
+
+
+    private void handleErrorResponse(Call<ResponseBody> call, Response<ResponseBody> response, Map<String, Object> updates) {
+        try {
+            String errorBody = response.errorBody() != null ? response.errorBody().string() : "Error desconocido";
+            Log.e(TAG, "Error al actualizar perfil. Código: " + response.code() +
+                    ", Error: " + errorBody);
+            Log.e(TAG, "URL de la petición: " + call.request().url());
+            Log.e(TAG, "Headers de la petición: " + call.request().headers());
+            Log.e(TAG, "Cuerpo de la petición: " + new Gson().toJson(updates));
+
+            JSONObject errorJson = new JSONObject(errorBody);
+            String message = errorJson.optString("message", "Error al guardar cambios");
+            String code = errorJson.optString("code", "");
+            String details = errorJson.optString("details", "");
+
+            String errorMessage = "Error: " + message;
+            if (!code.isEmpty()) errorMessage += " (Código: " + code + ")";
+            if (!details.isEmpty()) errorMessage += "\nDetalles: " + details;
+
+            Toast.makeText(EditorActivity.this, errorMessage, Toast.LENGTH_LONG).show();
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error al procesar respuesta de error: " + e.getMessage(), e);
+            Toast.makeText(EditorActivity.this, "Error al guardar cambios. Código: " + response.code(), Toast.LENGTH_LONG).show();
+        }
+    }
+
+
 }
