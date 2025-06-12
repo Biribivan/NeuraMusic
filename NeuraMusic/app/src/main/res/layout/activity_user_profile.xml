@@ -160,7 +160,7 @@
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvBlocks"
                 android:layout_width="match_parent"
-                android:layout_height="413dp"
+                android:layout_height="wrap_content"
                 android:clipToPadding="false"
                 android:paddingBottom="16dp" />
 
@@ -171,7 +171,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:nestedScrollingEnabled="false"
-                android:paddingBottom="80dp"
+                android:paddingBottom="16dp"
                 android:clipToPadding="false" />
 
             <!-- WebView para YouTube embebido -->
@@ -223,7 +223,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center"
-        android:layout_marginBottom="80dp"
+        android:layout_marginBottom="16dp"
         android:orientation="horizontal"
         android:visibility="gone"
         android:gravity="center">

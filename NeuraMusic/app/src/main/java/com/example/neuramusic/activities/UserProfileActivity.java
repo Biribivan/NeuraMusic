@@ -11,6 +11,7 @@ import android.view.View;
 import android.webkit.WebView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -108,7 +109,23 @@ public class UserProfileActivity extends AppCompatActivity {
             webViewYoutube.loadUrl("about:blank");
         });
 
-        fabAdd.setOnClickListener(v -> startActivity(new Intent(this, AddTextActivity.class)));
+        ImageButton fabAddText = findViewById(R.id.fabAddText);
+        ImageButton fabAddMedia = findViewById(R.id.fabAddMedia);
+        ImageButton fabAddAudio = findViewById(R.id.fabAddAudio);
+        LinearLayout layoutFanButtons = findViewById(R.id.layoutFanButtons);
+
+        fabAdd.setOnClickListener(v -> {
+            if (layoutFanButtons.getVisibility() == View.GONE) {
+                layoutFanButtons.setVisibility(View.VISIBLE);
+            } else {
+                layoutFanButtons.setVisibility(View.GONE);
+            }
+        });
+
+        fabAddText.setOnClickListener(v -> startActivity(new Intent(this, AddTextActivity.class)));
+        fabAddMedia.setOnClickListener(v -> startActivity(new Intent(this, AddMediaActivity.class)));
+        //fabAddAudio.setOnClickListener(v -> startActivity(new Intent(this, AddAudioActivity.class)));
+
     }
 
     private void setupRecyclerView() {

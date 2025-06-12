@@ -41,7 +41,7 @@ public class MediaPreviewAdapter extends RecyclerView.Adapter<MediaPreviewAdapte
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_media_preview, parent, false);
         
-        // Asegurar que el elemento ocupe todo el espacio del ViewPager2
+
         ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.MATCH_PARENT

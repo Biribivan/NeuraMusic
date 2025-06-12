@@ -27,5 +27,7 @@
     <string name="play_pause">Reproducir/Pausar</string>
     <string name="profile_picture">Imagen de perfil</string>
     <string name="media_content">Contenido multimedia</string>
+    <string name="delete_post">Eliminar publicación</string>
+
 
 </resources>

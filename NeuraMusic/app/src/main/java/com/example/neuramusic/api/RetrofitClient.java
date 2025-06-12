@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.util.Log;
 
 import com.example.neuramusic.auth.AuthSession;
+import com.example.neuramusic.auth.TokenAuthenticator;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -22,7 +23,9 @@ import java.io.IOException;
 
 public class RetrofitClient {
     private static final String TAG = "RetrofitClient";
-    public static final String API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4b3hoZG1paHlkam90c2dncGNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNzk3MjYsImV4cCI6MjA2Mzk1NTcyNn0.Cg4fm9x0NqlkSxtMTvMMFZJ-MNDoN1-u4ymKr7NdzR0";
+    public static final String API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4b3hoZG1paHlkam90c2dncGNvIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0ODM3OTcyNiwiZXhwIjoyMDYzOTU1NzI2fQ.eWRZRHeiIuAA7p6wC6kYULBSXj4y-M9KMaPsOPiRJt8";
+
+
     private static final String BASE_URL = "https://lxoxhdmihydjotsggpco.supabase.co/";
     private static Retrofit retrofit = null;
     private static SharedPreferences prefs;
@@ -35,22 +38,45 @@ public class RetrofitClient {
                 getRefreshToken(),
                 getCurrentUid()
         );
+    }
+    public static Retrofit getAuthClient() {
+        HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor(message ->
+                Log.d(TAG, "HTTP: " + message));
+        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
 
-        AuthSession.refreshSession(() -> {
-            Log.d(TAG, "Sesión actualizada al arrancar");
-        });
+        OkHttpClient client = new OkHttpClient.Builder()
+                .addInterceptor(chain -> {
+                    Request original = chain.request();
+                    Request request = original.newBuilder()
+                            .header("apikey", API_KEY)
+                            .header("Content-Type", "application/json")
+                            .build();
+                    return chain.proceed(request);
+                })
+                .addInterceptor(loggingInterceptor)
+                .build();
+
+        Gson gson = new GsonBuilder()
+                .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
+                .create();
+
+        return new Retrofit.Builder()
+                .baseUrl(BASE_URL)
+                .client(client)
+                .addConverterFactory(GsonConverterFactory.create(gson))
+                .build();
     }
 
 
     public static Retrofit getClient() {
-        // Refrescar sesión si es necesario
-        AuthSession.refreshSessionIfNeeded();
+        if (retrofit != null) return retrofit;
 
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor(message ->
                 Log.d(TAG, "HTTP: " + message));
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
 
         OkHttpClient client = new OkHttpClient.Builder()
+                .authenticator(new TokenAuthenticator())  // 🔁 Manejo automático de 401
                 .addInterceptor(chain -> {
                     Request original = chain.request();
                     Request.Builder requestBuilder = original.newBuilder()

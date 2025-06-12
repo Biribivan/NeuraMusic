@@ -239,7 +239,7 @@ public class AddMediaActivity extends AppCompatActivity {
         viewPager.setVisibility(hasMedia ? View.VISIBLE : View.GONE);
         tabLayout.setVisibility(hasMedia && selectedMedia.size() > 1 ? View.VISIBLE : View.GONE);
         rvThumbnails.setVisibility(hasMedia && selectedMedia.size() > 1 ? View.VISIBLE : View.GONE);
-        fabAddMore.setVisibility(hasMedia ? View.VISIBLE : View.GONE);
+        fabAddMore.setVisibility(View.VISIBLE);
         btnPublish.setEnabled(hasMedia);
     }
 

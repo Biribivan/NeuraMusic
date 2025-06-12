@@ -124,9 +124,6 @@ public class HomeFragment extends Fragment {
                 });
     }
 
-
-}
-
 private void loadMediaPosts() {
     Map<String, String> query = new HashMap<>();
     query.put("order", "created_at.desc");

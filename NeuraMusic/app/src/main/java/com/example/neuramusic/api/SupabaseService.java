@@ -33,19 +33,6 @@ public interface SupabaseService {
             @Body Map<String, String> refreshToken
     );
 
-    @DELETE("rest/v1/media_posts")
-    Call<ResponseBody> deleteMediaPost(
-            @Query("id") String postId,
-            @Header("apikey") String apiKey,
-            @Header("Authorization") String token
-    );
-
-    @DELETE("rest/v1/text_posts")
-    Call<ResponseBody> deleteTextPost(
-            @Query("id") String postId,
-            @Header("apikey") String apiKey,
-            @Header("Authorization") String token
-    );
 
 
     // --- Usuarios ---
@@ -121,6 +108,31 @@ public interface SupabaseService {
             @Body MediaPost post
     );
 
+    @DELETE("rest/v1/text_posts")
+    @Headers({
+            "Content-Type: application/json",
+            "Prefer: return=minimal"
+    })
+    Call<ResponseBody> deleteTextPost(
+            @QueryMap Map<String, String> query,
+            @Header("apikey") String apiKey,
+            @Header("Authorization") String token
+    );
+
+
+    @DELETE("rest/v1/media_posts")
+    @Headers({
+            "Content-Type: application/json",
+            "Prefer: return=minimal"
+    })
+    Call<ResponseBody> deleteMediaPost(
+            @QueryMap Map<String, String> query,
+            @Header("apikey") String apiKey,
+            @Header("Authorization") String token
+    );
+
+
+
     @GET("rest/v1/media_posts")
     Call<List<MediaPost>> getMediaPosts(
             @QueryMap Map<String, String> query,
@@ -168,7 +180,7 @@ public interface SupabaseService {
             @Body Map<String, Object> updates
     );
 
-    @POST("rest/v1/track")
+    @POST("rest/v1/tracks")
     @Headers("Content-Type: application/json")
     Call<ResponseBody> createSingleTrack(
             @Body Track track,
@@ -176,7 +188,14 @@ public interface SupabaseService {
             @Header("Authorization") String token
     );
 
-    @GET("rest/v1/track")
+    @GET("rest/v1/tracks")
+    Call<List<Track>> getTracksByPlaylistId(
+            @Query("playlist_id") String playlistId,
+            @Header("apikey") String apiKey,
+            @Header("Authorization") String token
+    );
+
+    @GET("rest/v1/tracks")
     Call<List<Track>> getTracks(
             @QueryMap Map<String, String> query,
             @Header("apikey") String apiKey,

@@ -20,7 +20,7 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.LibraryV
     private final List<Playlist> visiblePlaylists;
     private final FolderClickListener folderClickListener;
     private final FolderLongClickListener folderLongClickListener;
-    private final OnPlaylistClickListener playlistClickListener; // ✅ NUEVO
+    private final OnPlaylistClickListener playlistClickListener;
 
     // === Interfaces ===
     public interface FolderClickListener {
@@ -82,7 +82,7 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.LibraryV
                 return true;
             });
         } else {
-            // ✅ Playlist real: lanzar listener de navegación
+            //  Playlist real: lanzar listener de navegación
             holder.itemView.setOnClickListener(v -> {
                 v.startAnimation(AnimationUtils.loadAnimation(context, R.anim.fade_in));
                 playlistClickListener.onPlaylistClick(item);
@@ -98,7 +98,7 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.LibraryV
         return visiblePlaylists.size();
     }
 
-    // === ViewHolder ===
+    // == ViewHolder ===
     static class LibraryViewHolder extends RecyclerView.ViewHolder {
         ImageView icon, arrow;
         TextView title;

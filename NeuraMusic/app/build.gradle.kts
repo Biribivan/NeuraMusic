@@ -40,7 +40,7 @@ android {
 
     buildFeatures {
         viewBinding = true
-        dataBinding = true // ✅ Esto habilita los layouts con <layout>
+        dataBinding = true //   habilita los layouts con <layout>
     }
 }
 
